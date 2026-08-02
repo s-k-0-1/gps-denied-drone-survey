@@ -240,7 +240,7 @@ Wiring details: [01 — Hardware](01_HARDWARE.md).
 | Dashboard shows SIMULATOR | No MAVLink heartbeat — verify `MAVLINK_CONN` and `nc -vz <JETSON-IP> 5760` |
 | Docker permission denied (3D) | `sudo usermod -aG docker $USER`, then log out/in |
 
-More: [RUN_GUIDE.md](../RUN_GUIDE.md) · [PARAMETERS_GUIDE_EN.md](../PARAMETERS_GUIDE_EN.md)
+More: [RUN_GUIDE.md](../RUN_GUIDE.md) · [PARAMETERS_GUIDE.md](../PARAMETERS_GUIDE.md)
 
 ---
 

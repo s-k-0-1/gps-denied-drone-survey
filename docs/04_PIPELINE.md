@@ -4,8 +4,8 @@ What every file does, and exactly how a target goes from "a 64×64 seed image" t
 y = 1.92 m from the base station".
 
 For the underlying theory (why DINOv2, what bundle adjustment is, etc.) see
-[HOW_IT_WORKS_EN.md](../HOW_IT_WORKS_EN.md). For tuning values see
-[PARAMETERS_GUIDE_EN.md](../PARAMETERS_GUIDE_EN.md).
+[HOW_IT_WORKS.md](../HOW_IT_WORKS.md). For tuning values see
+[PARAMETERS_GUIDE.md](../PARAMETERS_GUIDE.md).
 
 ---
 
@@ -326,7 +326,7 @@ Found 5/5 targets                                         ← done
 | Switch coordinate origin | `BASE_STATION_EXACT`, `HEADING_ROT_DEG` in `iroc_pipeline_fixed.py` |
 | Change seed size | `LR_SIZE` in `make_lr.py` |
 
-Full explanations: [PARAMETERS_GUIDE_EN.md](../PARAMETERS_GUIDE_EN.md).
+Full explanations: [PARAMETERS_GUIDE.md](../PARAMETERS_GUIDE.md).
 
 ---
 

@@ -104,14 +104,11 @@ Read these in order — they are written for someone who has never seen this pro
 | **[06 — Git & GitHub](docs/06_GIT_GITHUB.md)** | Complete beginner's guide: install git, create the repo, push, update, clone |
 | **[07 — Stage Guide](docs/07_STAGE_GUIDE.md)** | Practical per-stage reference: what runs, which file, the few parameters that matter, how to fix each stage |
 | **[08 — Troubleshooting](docs/08_TROUBLESHOOTING.md)** | Every known symptom → fix, in one lookup table (install, stitching, matching, dashboard, MAVLink, ESP32, git) |
-| [How It Works (theory)](HOW_IT_WORKS_EN.md) | Deep theory of every algorithm — written for the viva |
-| [Parameters Guide](PARAMETERS_GUIDE_EN.md) | Every tunable parameter, when to change it and why |
+| [How It Works (theory)](HOW_IT_WORKS.md) | Deep theory of every algorithm |
+| [Parameters Guide](PARAMETERS_GUIDE.md) | Every tunable parameter, when to change it and why |
 | [Run Guide](RUN_GUIDE.md) | Run + validation checklist |
 | [64×64 Mode](PARAMETERS_64x64.md) | Tuning for the alternate 64×64 LR-to-LR matching mode |
 | [Declarations](DECLARATIONS_11.6.md) | Competition declarations: coordinate scheme, no-GPS, survey pattern, processing location |
-
-*(Hinglish versions of the theory and parameter guides are also included:
-`HOW_IT_WORKS.md`, `PARAMETERS_GUIDE.md`.)*
 
 ---
 

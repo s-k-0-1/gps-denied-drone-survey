@@ -3,8 +3,8 @@
 A practical, one-page-per-stage reference: **what happens**, **which file is doing it**, **the few
 parameters that actually matter**, and **how to use / fix** each stage.
 
-- Full theory → [HOW_IT_WORKS_EN.md](../HOW_IT_WORKS_EN.md)
-- Every single parameter → [PARAMETERS_GUIDE_EN.md](../PARAMETERS_GUIDE_EN.md)
+- Full theory → [HOW_IT_WORKS.md](../HOW_IT_WORKS.md)
+- Every single parameter → [PARAMETERS_GUIDE.md](../PARAMETERS_GUIDE.md)
 
 ---
 
@@ -329,4 +329,4 @@ Outputs → `results/3d_map/` (`model.glb` opens in Windows 3D Viewer / Blender 
 
 ---
 
-**See also:** [04 — Pipeline detail](04_PIPELINE.md) · [PARAMETERS_GUIDE_EN.md](../PARAMETERS_GUIDE_EN.md) · [RUN_GUIDE.md](../RUN_GUIDE.md)
+**See also:** [04 — Pipeline detail](04_PIPELINE.md) · [PARAMETERS_GUIDE.md](../PARAMETERS_GUIDE.md) · [RUN_GUIDE.md](../RUN_GUIDE.md)
