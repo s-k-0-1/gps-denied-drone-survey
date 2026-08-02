@@ -1,0 +1,9 @@
+# Base Station dashboard — runtime deps (the heavy pipeline deps like
+# torch/opencv are NOT needed here; the app only reads the pipeline's output
+# files and launches your scripts as subprocesses).
+
+fastapi>=0.110
+uvicorn[standard]>=0.27      # [standard] pulls in websockets + httptools
+watchdog>=3.0                # results/ + photos file-watcher (auto-refresh)
+pymavlink>=2.4               # MAVLink link (PX4 / ArduPilot). Optional: app
+                             # falls back to the simulator if it's missing.

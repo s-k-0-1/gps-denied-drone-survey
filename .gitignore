@@ -1,0 +1,86 @@
+# ── Data (large, never commit) ────────────────────────────────────────────
+drone_photos/
+drone_photos_lr/
+targets/
+reference/
+map/
+survey/
+datasets/
+results/
+results_lr*/
+results_archive/
+*.laz
+*.glb
+*.tif
+*.ply
+
+# Flight logs / databases (large, per-flight data)
+*.db
+*.sqlite
+*.sqlite3
+flight_*.db
+*.ulg
+*.bin
+*.tlog
+
+# Keep the folder structure visible even though contents are ignored
+!**/.gitkeep
+
+# ── Python ────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+
+# ── Models / weights (downloaded automatically at runtime) ────────────────
+*.pth
+*.pt
+*.onnx
+~/.cache/torch/
+
+# ── OS / editor ───────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.vscode/
+.idea/
+*.Zone.Identifier
+
+# ── Local config / secrets ────────────────────────────────────────────────
+.env
+voltage.txt
+cloudflared
+
+# ── Build artifacts ───────────────────────────────────────────────────────
+build/
+dist/
+
+# ── Legacy / experimental scripts (superseded — kept locally, not published) ──
+# These were development experiments before the final pipeline. They still work
+# on disk, they are simply not part of the released project.
+stitch_v3.py
+stitch_v3_small_dataset_less_than_40.py
+field_map (1).py
+calibrate.py
+color_heightmap.py
+test_candidates.py
+iroc_final.py
+iroc_pipeline2.py
+lr_match.py
+lr_matcher.py
+lr_search.py
+lr_pipeline.py
+make_lr_targets.py
+proto_match.py
+cascade_match.py
+roma_match.py
+get-docker.sh
+rb.txt
+README_LR_MATCH.md
+base_station_app_prompt.md
+jetson/
+archive/

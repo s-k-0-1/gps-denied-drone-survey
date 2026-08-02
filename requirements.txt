@@ -1,0 +1,24 @@
+# ASCEND — ground-station pipeline requirements (Python 3.10+)
+# Install:  pip install -r requirements.txt --break-system-packages
+#
+# The dashboard has its own (much lighter) requirements: base_station/requirements.txt
+
+# ── Core vision / math ────────────────────────────────────────────────────
+opencv-python>=4.8
+numpy>=1.24
+scipy>=1.10                 # bundle adjustment (least_squares)
+
+# ── Deep matching models ──────────────────────────────────────────────────
+# torch: install the build that matches your CUDA version — see
+#   https://pytorch.org/get-started/locally/
+# CPU-only also works (slower).
+torch>=2.0
+torchvision>=0.15
+kornia>=0.7                 # LoFTR (stitching)
+# DINOv2 is fetched at runtime via torch.hub (facebookresearch/dinov2)
+
+# ── Optional: 3D reconstruction (3d.py) ───────────────────────────────────
+# OpenDroneMap itself runs in Docker — these are only for the extra outputs.
+trimesh>=4.0                # export textured model -> model.glb
+# open3d>=0.17              # interactive 3D viewer (optional, needs a GUI)
+# rasterio>=1.3             # fallback GeoTIFF reader for DSM/orthophoto

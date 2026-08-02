@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 560" width="980" height="560" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <rect width="980" height="560" fill="#ffffff"/>
+
+  <text x="490" y="34" text-anchor="middle" font-size="19" font-weight="700" fill="#12324a">ASCEND — System Architecture</text>
+  <text x="490" y="54" text-anchor="middle" font-size="12" fill="#5d6878">Team LUMA · IRoC-U 2026 · GPS-free survey &amp; feature localization</text>
+
+  <!-- DRONE -->
+  <rect x="30" y="80" width="270" height="180" rx="10" fill="#eef6ff" stroke="#2b7fff" stroke-width="1.5"/>
+  <text x="45" y="104" font-size="13" font-weight="700" fill="#14538f">DRONE (ASCEND)</text>
+  <text x="45" y="126" font-size="11.5" fill="#22384c">Tarot 650 · Emax 935KV ×4 · 1045</text>
+  <text x="45" y="145" font-size="11.5" fill="#22384c">BLHeli_S 30A ESC ×4</text>
+  <text x="45" y="168" font-size="11.5" fill="#22384c">Pixhawk Cube Orange+ (PX4)</text>
+  <text x="45" y="187" font-size="11.5" fill="#22384c">RealSense D455 · MTF-01 flow</text>
+  <text x="45" y="206" font-size="11.5" fill="#22384c">Jetson Orin Nano ← 75W buck 12V</text>
+  <text x="45" y="229" font-size="11.5" fill="#22384c">4S Li-ion + BMS → 2-pin pads</text>
+  <text x="45" y="250" font-size="10.5" font-style="italic" fill="#5d6878">captures HD photos + VIO pose</text>
+
+  <!-- GROUND PC -->
+  <rect x="380" y="80" width="270" height="180" rx="10" fill="#eafaf3" stroke="#0ea371" stroke-width="1.5"/>
+  <text x="395" y="104" font-size="13" font-weight="700" fill="#0b6b4a">GROUND PC</text>
+  <text x="395" y="126" font-size="11.5" fill="#22384c">Dashboard (FastAPI, :8000)</text>
+  <text x="395" y="145" font-size="11.5" fill="#22384c">Pipeline stages 1–4</text>
+  <text x="395" y="164" font-size="11.5" fill="#22384c">3D reconstruction (optional)</text>
+  <text x="395" y="190" font-size="10.5" font-style="italic" fill="#5d6878">telemetry · map · targets · logs</text>
+
+  <!-- BASE STATION -->
+  <rect x="710" y="80" width="240" height="180" rx="10" fill="#fff6e8" stroke="#c07f00" stroke-width="1.5"/>
+  <text x="725" y="104" font-size="13" font-weight="700" fill="#8a5b00"/>
+  <text x="725" y="104" font-size="13" font-weight="700" fill="#8a5b00">BASE STATION (ESP32)</text>
+  <text x="725" y="126" font-size="11.5" fill="#22384c">A4988 ×2 → docking rods</text>
+  <text x="725" y="145" font-size="11.5" fill="#22384c">BTS7960 H-bridge charger</text>
+  <text x="725" y="164" font-size="11.5" fill="#22384c">ADC dividers → pad voltage</text>
+  <text x="725" y="190" font-size="10.5" font-style="italic" fill="#5d6878">contact + polarity detection</text>
+
+  <!-- arrows top row -->
+  <line x1="300" y1="150" x2="376" y2="150" stroke="#5d6878" stroke-width="1.6" marker-end="url(#a)"/>
+  <line x1="376" y1="172" x2="300" y2="172" stroke="#5d6878" stroke-width="1.6" marker-end="url(#a)"/>
+  <text x="338" y="142" text-anchor="middle" font-size="10" fill="#5d6878">MAVLink</text>
+  <text x="338" y="192" text-anchor="middle" font-size="10" fill="#5d6878">photos (rsync)</text>
+
+  <line x1="650" y1="160" x2="706" y2="160" stroke="#5d6878" stroke-width="1.6" marker-end="url(#a)"/>
+  <text x="678" y="152" text-anchor="middle" font-size="10" fill="#5d6878">HTTP</text>
+
+  <!-- PIPELINE -->
+  <rect x="30" y="300" width="920" height="230" rx="10" fill="#f7f9fc" stroke="#d8dee8" stroke-width="1.5"/>
+  <text x="46" y="326" font-size="13" font-weight="700" fill="#12324a">GROUND PIPELINE — python3 iroc_pipeline_fixed.py</text>
+
+  <rect x="48" y="344" width="168" height="86" rx="8" fill="#ffffff" stroke="#2b7fff" stroke-width="1.3"/>
+  <text x="60" y="366" font-size="12" font-weight="700" fill="#14538f">1 · STITCH</text>
+  <text x="60" y="386" font-size="10.5" fill="#22384c">LoFTR + RANSAC</text>
+  <text x="60" y="402" font-size="10.5" fill="#22384c">bundle adjustment</text>
+  <text x="60" y="421" font-size="10" font-style="italic" fill="#5d6878">→ orthomosaic</text>
+
+  <rect x="238" y="344" width="168" height="86" rx="8" fill="#ffffff" stroke="#2b7fff" stroke-width="1.3"/>
+  <text x="250" y="366" font-size="12" font-weight="700" fill="#14538f">2 · FIELD MAP</text>
+  <text x="250" y="386" font-size="10.5" fill="#22384c">yellow boundary</text>
+  <text x="250" y="402" font-size="10.5" fill="#22384c">rectify + true scale</text>
+  <text x="250" y="421" font-size="10" font-style="italic" fill="#5d6878">→ rectified field</text>
+
+  <rect x="428" y="344" width="168" height="86" rx="8" fill="#ffffff" stroke="#0ea371" stroke-width="1.6"/>
+  <text x="440" y="366" font-size="12" font-weight="700" fill="#0b6b4a">3 · MATCH</text>
+  <text x="440" y="386" font-size="10.5" fill="#22384c">DINOv2 semantic</text>
+  <text x="440" y="402" font-size="10.5" fill="#22384c">seed 64 ↔ drone 128</text>
+  <text x="440" y="421" font-size="10" font-style="italic" fill="#5d6878">→ found / not found</text>
+
+  <rect x="618" y="344" width="168" height="86" rx="8" fill="#ffffff" stroke="#2b7fff" stroke-width="1.3"/>
+  <text x="630" y="366" font-size="12" font-weight="700" fill="#14538f">4 · COORDINATES</text>
+  <text x="630" y="386" font-size="10.5" fill="#22384c">pixel → mosaic →</text>
+  <text x="630" y="402" font-size="10.5" fill="#22384c">rectified → metres</text>
+  <text x="630" y="421" font-size="10" font-style="italic" fill="#5d6878">→ base-station frame</text>
+
+  <rect x="808" y="344" width="126" height="86" rx="8" fill="#ffffff" stroke="#9aa5b4" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="820" y="366" font-size="12" font-weight="700" fill="#5d6878">5 · 3D</text>
+  <text x="820" y="386" font-size="10.5" fill="#22384c">OpenDroneMap</text>
+  <text x="820" y="402" font-size="10.5" fill="#22384c">SfM → MVS</text>
+  <text x="820" y="421" font-size="10" font-style="italic" fill="#5d6878">optional</text>
+
+  <line x1="216" y1="387" x2="234" y2="387" stroke="#5d6878" stroke-width="1.6" marker-end="url(#a)"/>
+  <line x1="406" y1="387" x2="424" y2="387" stroke="#5d6878" stroke-width="1.6" marker-end="url(#a)"/>
+  <line x1="596" y1="387" x2="614" y2="387" stroke="#5d6878" stroke-width="1.6" marker-end="url(#a)"/>
+  <line x1="786" y1="387" x2="804" y2="387" stroke="#9aa5b4" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#a)"/>
+
+  <text x="48" y="470" font-size="11" fill="#22384c"><tspan font-weight="700">Inputs:</tspan>  drone_photos/ (HD + coordinates.csv)  ·  targets/ (64×64 seed images)</text>
+  <text x="48" y="492" font-size="11" fill="#22384c"><tspan font-weight="700">Outputs:</tspan>  targets.json (x, y, z from base station)  ·  proof_hd/ (HD)  ·  lr_match/ (LR)  ·  annotated_field.jpg</text>
+  <text x="48" y="514" font-size="11" fill="#22384c"><tspan font-weight="700">Position source:</tspan>  Pixhawk VIO / optical flow — <tspan font-weight="700" fill="#a33">no GPS / GNSS</tspan></text>
+
+  <defs>
+    <marker id="a" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#5d6878"/>
+    </marker>
+  </defs>
+</svg>

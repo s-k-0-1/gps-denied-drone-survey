@@ -1,0 +1,371 @@
+<meta charset="utf-8">
+<title>ASCEND Pipeline — Documentation (IRoC-U 2026)</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+<style>
+  body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;max-width:840px;margin:0 auto;padding:34px 40px;color:#1a2330;line-height:1.55;font-size:14.5px}
+  h1{font-size:26px;border-bottom:3px solid #16b888;padding-bottom:8px;margin-top:8px}
+  h2{font-size:20px;margin-top:26px;border-bottom:1px solid #d8dee8;padding-bottom:4px;color:#0e5a44}
+  h3{font-size:16px;margin-top:18px;color:#0f6e56}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:12.8px}
+  th,td{border:1px solid #d0d7e2;padding:6px 9px;text-align:left;vertical-align:top}
+  th{background:#eaf6f1}
+  code{background:#eef2f8;padding:1px 5px;border-radius:4px;font-family:"JetBrains Mono",Consolas,monospace;font-size:12.5px}
+  pre{background:#0f1720;color:#d7e2ec;padding:12px 14px;border-radius:8px;overflow-x:auto;font-size:11.5px;line-height:1.45}
+  pre code{background:none;color:inherit;padding:0}
+  blockquote{border-left:4px solid #16b888;margin:10px 0;padding:4px 14px;background:#f3faf7;color:#33413a}
+  a{color:#0e7a5a}
+  .page-break{page-break-before:always}
+  .cover{text-align:center;padding:60px 0 20px}
+  .cover .t{font-size:30px;font-weight:800;color:#0e5a44}
+  .cover .s{font-size:16px;color:#5d6878;margin-top:6px}
+  .hint{background:#fff8e6;border:1px solid #f0d089;border-radius:8px;padding:10px 14px;font-size:13px;color:#6b5514;margin:16px 0}
+  @media print{.hint{display:none} body{padding:0 6px;max-width:none} h2{page-break-after:avoid} h3{page-break-after:avoid} table,pre{page-break-inside:avoid}}
+</style>
+
+<div class="hint">📄 <b>PDF banane ke liye:</b> is page pe <b>Ctrl + P</b> dabao → Destination = <b>"Save as PDF"</b> → Save. (Ye box print me nahi aayega.)</div>
+
+<div class="cover">
+  <div class="t">ASCEND Pipeline — Documentation</div>
+  <div class="s">Team LUMA · Drone ASCEND · IRoC-U 2026 (ISRO Robotics Challenge)</div>
+  <div class="s" style="font-size:13px;margin-top:14px;color:#8a95a6">How It Works (Full Theory) &nbsp;·&nbsp; Parameters Guide &nbsp;·&nbsp; 64×64 Search Mode</div>
+</div>
+
+<div id="content">Loading… (internet on rakho — marked.js CDN se load hota hai)</div>
+
+<script id="md" type="text/plain">
+
+<div class="page-break"></div>
+
+# ASCEND Pipeline — How It Works (Full Theory · Viva Guide)
+
+**Team LUMA · Drone ASCEND · IRoC-U 2026 · Rulebook V4.0 (Final Field Round)**
+
+The **theory** of the whole system + **how each part works** + **which image is compared at what size/type**. For the viva — a deep explanation of every stage.
+
+---
+
+## 0. First — SEED, DRONE-LR, HD (clearing the confusion)
+
+Three different images, three jobs:
+
+| Image | Size | Source | Job |
+|---|---|---|---|
+| **Seed / reference** | **64×64** | Provided by **organizers** in the final round (V4.0, 11.3.1) | matching reference |
+| **Drone LR (ASCEND)** | **128×128** | ASCEND captures HD `1280×720` → down-samples (10.4) | searched during matching |
+| **HD photo** | **1280×720** | ASCEND onboard camera | stitching + final HD proof + 3D |
+
+**Match (Stage 3) = seed-64 ↔ drone-128** — via DINOv2 features (different sizes are fine). **HD (720) is NOT used in matching.**
+
+## 1. Problem (one line)
+
+The drone autonomously surveys the arena, logging HD photos + position; from those photos we **find the targets** and report their **coordinates** — **without GPS** (the rulebook bans GPS/GNSS). Position comes from **camera + Pixhawk VIO** (visual-inertial odometry / optical flow).
+
+**Input:** `drone_photos/` (HD + `coordinates.csv`) + `targets/` (seed 64×64).
+**Output (per target):** LR image, HD image, base-station-relative `(x, y, z)`. Plus an optional 3D map.
+
+## 2. The rulebook's LR workflow (10.4)
+
+Two-phase LR-to-LR matching:
+1. **Reference/seed (before):** an LR image, 64×64. **Organizers provide it** in the final round (teams create it in elimination).
+2. **After the sortie:** ASCEND **captures HD** → **down-samples that same HD** → **128×128 LR** (LR ASCEND image) → **compares/matches with the seed**.
+
+> Our pipeline does exactly this: `build_drone_lr` HD → 128 LR (`drone_photos_lr/`), then DINOv2 matches it against the 64-seed.
+
+## 3. Full flow
+
+```
+ drone_photos (HD) + coordinates.csv (VIO)              targets/ (seed 64x64)
+        |                                                        |
+   [STAGE 1] STITCH  (LoFTR + bundle adjustment) -> orthomosaic  |
+        |                                                        |
+   [STAGE 2] FIELD MAP  (yellow detect -> perspective rectify)   |
+        |                                                        |
+   [STAGE 3] TARGET MATCH  (seed-64 <-> drone-128, DINOv2) <------+
+        |
+   [STAGE 4] COORDINATES  (pixel -> mosaic -> rectified -> metres, base-station origin)
+        |
+   [STAGE 5] 3D MAP  (3d.py: OpenDroneMap photogrammetry - optional)
+```
+
+## 4. Stage-by-stage FULL THEORY
+
+### STAGE 1 — Stitching (`iroc_pipeline.py`)
+
+**Goal:** join the overlapping drone photos into a single **top-view orthomosaic**.
+
+1. **Pair selection (VIO KNN):** each photo has its `x,y` (VIO) in `coordinates.csv`. We pair each photo with its **spatially-nearest** photos (K-nearest-neighbours). *Why:* nearby photos overlap, so only those will match. (Works for center-start, corner-start, spiral — any pattern.)
+2. **Feature matching — LoFTR:** LoFTR is a **detector-free deep matcher** (Transformer-based). Classic matchers (SIFT) first detect "keypoints" then match — they fail on low-texture (gravel, plain ground). LoFTR extracts **dense features over the whole image** and uses **attention** to output **corresponding points** directly — strong even on low-texture.
+3. **Transform estimation (RANSAC + homography):** from the matches it computes a **homography/affine matrix** `H` telling how to place photo B onto photo A. **RANSAC** removes outliers and fits only on **inliers** (the "inliers" count in the log).
+4. **Graph + BFS align:** all photos form a **graph** (node = photo, edge = match). The **anchor** = the center photo. **BFS** brings every photo's transform into the anchor's frame.
+5. **Bundle adjustment:** small BFS errors **compound** (drift). Bundle adjustment optimizes all transforms **together**, minimizing the total **reprojection error** → eliminates drift/skew.
+6. **Loop closure:** finds extra matches between far-apart photos that meet again → more constraints → straighter mosaic.
+7. **Warp + exposure blend:** warps each photo onto the canvas, matches brightness with **exposure gains**, **blends** seams → clean mosaic.
+
+**Comparison here:** **drone-HD ↔ drone-HD** (grayscale 960×544), **GEOMETRIC** (points).
+
+### STAGE 2 — Field map + Yellow boundary
+
+**Goal:** turn the skewed mosaic into a **straight rectangle** + set the **pixel→metre** scale.
+
+1. **Yellow detection (Lab colour):** in **Lab**, `b*` is the blue↔yellow axis. Yellow tape has a **large positive** `b*−a*` → mask on that. If lighting changes, **Otsu** (auto-threshold) adapts. Solid yellow blobs (features) are rejected by fill-ratio; thin tape kept.
+2. **Corners:** **connected components** → largest = tape frame. **Convex hull** → `approxPolyDP` → **4 corner points**.
+3. **Perspective rectification:** compute the transform `M_persp` that maps the 4 detected corners onto a **true rectangle** (30×25 ft) → top-down straight image.
+4. **Metric scale:** arena size **known** (30×25 ft). `PX_PER_M` (150 px/m) converts pixel↔metre; longer pixel edge = 30 ft (auto).
+
+### STAGE 3 — Target matching (`stage3_robust.py`)
+
+**Goal:** find each **seed (64)** in the drone LR (128) photos — which photo, and where.
+
+**Method — DINOv2 semantic:** DINOv2 is a **self-supervised Vision Transformer**. It splits an image into **patches** and gives each patch a **feature vector (embedding)** capturing "what it looks like" (colour/texture/shape), robust to rotation/lighting/scale.
+
+1. **CLAHE** on the L-channel → reduces shadow/lighting differences.
+2. **Prototypes from the seed:** **background prototype** = average of **border** patches; **object prototype** = average of patches **furthest** from the background (foreground). Averaging → rotation-robust.
+3. **Heatmap (per drone photo):** each patch score = `(patch·object) − (patch·background)`. Peak = target location.
+4. **Shortlist:** top-K photos by peak.
+5. **Verification:** cosine similarity of the peak crop's embedding vs the seed crop's embedding, max over **4 rotations** = `vsim`; plus a **colour histogram** check so distinct objects aren't confused.
+6. **Found / Not-found:** `peak ≥ MIN_FOUND_PEAK` **AND** `vsim ≥ VERIFY_MIN` → FOUND, else **NOT FOUND** (no random guess). **Auto-calibrate** lowers the threshold from the background (lenient only).
+7. **Mutual exclusion:** two targets within `SEP_M` → greedy assignment (strong-peak claims first).
+8. **Multi-photo averaging:** average a target's positions across photos → higher accuracy.
+
+**Comparison here:** **seed-64 ↔ drone-128**, **LR-to-LR**, via **DINOv2 features (cosine)** — not pixel-to-pixel.
+
+### STAGE 4 — Coordinates + deliverables
+
+1. **Homography chaining:** target pixel → **`photo_to_H`** → mosaic pixel → **`M_persp`** → rectified pixel → `÷ PX_PER_M` → **metres**.
+2. **Base-station origin:** VIO `(0,0)` = takeoff = base station. Using `A` (VIO→mosaic affine) we project VIO(0,0) into the rectified frame → base-station field position → **subtract from every target** → base-station-relative coords (11.3.4).
+3. **Save:** `lr_match/<t>.png` (LR), `proof_hd/<t>.jpg` (sharp ≥720 HD), `targets.json` (coords), `annotated_field.jpg`.
+
+### STAGE 5 — 3D Map (`3d.py`) — OpenDroneMap photogrammetry (optional)
+
+**Goal:** a **3D model + elevation map** from the same overlapping HD photos. ODM runs in Docker (GPU):
+
+1. **SIFT features** — thousands of points per photo.
+2. **Feature matching** — same points across photos (all pairs).
+3. **SfM (Structure from Motion)** — matches + **bundle adjustment** → **camera poses** + a **sparse 3D point cloud**.
+4. **MVS (Multi-View Stereo)** — sparse → **dense point cloud** (triangulate depth from multiple views).
+5. **Meshing + texturing** — dense cloud → surface **mesh** → **texture** from photos → textured 3D model.
+6. **DSM + Orthophoto** — **DSM** = top-down elevation grid; **Orthophoto** = distortion-free top-down colour image (true scale).
+
+**3d.py extras:** exports **`model.glb`** (textured 3D, main deliverable); fuses orthophoto colour + DSM height into a **colored point cloud**; makes a side-by-side orthophoto | DSM preview.
+**Outputs → `results/3d_map/`:** `model.glb`, `orthophoto.tif`, `dsm.tif`, `point_cloud.laz`, `color_heightmap.ply/.jpg`.
+**Run:** `python3 iroc_pipeline_fixed.py --run-3d` or `python3 3d.py`.
+
+## 4a. Resolution chain — "at what size does the comparison happen?"
+
+**Seed:** `64×64` → *(to_work)* `640×480` → *(dino_patches)* `448×448` → DINOv2 features
+**Drone:** `128×128` (drone_photos_lr) → `640×480` → `448×448` → DINOv2 features
+
+| | Source size | to_work | DINOv2 input |
+|---|---|---|---|
+| **Seed** | **64×64** (V4.0) | 640×480 | 448×448 |
+| **Drone (match)** | **128×128** (10.4) | 640×480 | 448×448 |
+| HD 1280×**720** | *not in matching* — stitch + HD proof + 3D | — | — |
+
+**Comparison = seed-64 ↔ drone-128 (LR-to-LR).** Inside DINOv2 both go to 448 (32×32 patches) — no new information, just the feature-extractor's fixed input size. The match is by **cosine** (not pixel-to-pixel), so different sizes are fine.
+
+*Analogy:* face-recognition matches a person from two differently-sized photos — it compares **features**, not exact pixels.
+
+## 5. Coordinate system (No GPS)
+
+- **No GPS/GNSS** — Pixhawk VIO / optical-flow (`coordinates.csv`).
+- **VIO** fuses camera frames + IMU to track position/heading without satellites.
+- **Origin (0,0) = base station** = takeoff (VIO 0,0). Coords relative to it (11.3.4); `BASE_STATION_EXACT` flag; `HEADING_ROT_DEG` aligns axes to the assigned heading (0/90/180/270).
+- **Accuracy:** rectified-pixel frame → distances between targets exact (~0.1 m on distinct features).
+- **z** from the Pixhawk (untouched). **Max height ~6 m** (final field constraint).
+
+## 6. Key algorithms — 1-line glossary
+
+| Term | What it is |
+|---|---|
+| **LoFTR** | Detector-free deep image matcher — matches points on low-texture. Stitching. |
+| **RANSAC** | Outlier-robust fitting — removes wrong matches. |
+| **Homography** | 3×3 matrix mapping one image onto another/rectified plane. |
+| **Bundle adjustment** | Jointly optimizes camera/point estimates (min reprojection error) — removes drift. |
+| **DINOv2** | Self-supervised ViT — semantic patch embeddings (matching). |
+| **CLAHE** | Adaptive histogram equalization — normalizes lighting. |
+| **Cosine similarity** | Angle between two feature-vectors — how similar. |
+| **SfM** | Structure from Motion — camera poses + sparse 3D. |
+| **MVS** | Multi-View Stereo — dense 3D cloud. |
+| **DSM** | Digital Surface Model — top-down elevation grid. |
+| **Orthophoto** | Distortion-free top-down colour map. |
+| **VIO** | Visual-Inertial Odometry — GPS-free position from camera + IMU. |
+
+## 7. Viva Q&A
+
+**Q: Do you use GPS?** No. Pixhawk VIO / optical-flow.
+**Q: Rulebook asks LR-to-LR — do you?** Yes. HD → 128 LR (10.4), compared with the 64 seed (V4) via DINOv2.
+**Q: At what size is the comparison?** seed-64 ↔ drone-128, both processed at 640→448. HD (720) is NOT in matching.
+**Q: If sizes differ, how do they match?** DINOv2 feature vectors, compared by cosine in feature-space — not pixel-to-pixel.
+**Q: If 64×64 matching is required?** `MATCH_LR=64 python3 iroc_pipeline_fixed.py --skip-stitch` — result copied to `results_lr64/`. Default (drone 128) is best.
+**Q: How does stitching work?** LoFTR matches neighbouring drone-HD photos → RANSAC homography → BFS → bundle adjustment → blend.
+**Q: Low-texture ground?** LoFTR (stitch) + DINOv2 (match) are semantic/dense — work where SIFT/geometric fail.
+**Q: How is the 3D built?** ODM: SIFT → match → SfM → MVS → mesh → texture → model.glb + orthophoto + DSM.
+**Q: Coordinate origin?** Base station (VIO takeoff); targets relative, in metres.
+**Q: Avoid false positives?** `peak` + `vsim` thresholds; below → NOT FOUND. Plus object-vs-background prototype + colour + mutual-exclusion.
+**Q: Accuracy?** ~0.1 m on distinct features.
+
+<div class="page-break"></div>
+
+# Parameters Guide (default mode)
+
+Run: `python3 iroc_pipeline_fixed.py` (full: stitch + field + match + annotate). Parameters live in 4 places: **`iroc_pipeline_fixed.py`** (coordinate frame, dedup, stitch-fix flags), **`stage3_robust.py`** (matching thresholds), **`iroc_pipeline.py`** (stitching, field scale, camera), **`make_lr.py`** (seed LR size).
+
+## 0. Run flags
+
+| Flag | What it does | When |
+|---|---|---|
+| *(none)* | Full run | New data / first time |
+| `--skip-stitch` | Reuse mosaic, fresh matching | Only matching/coords test |
+| `--skip-match` | Reuse everything, recompute coords | Only coord/field tweak (fastest) |
+| `--radius 2` | More neighbour pairs (8-NN → 12-NN) | Low overlap / weak stitch |
+| `--run-3d` | 3D reconstruction (ODM, Docker) | 3D map |
+
+> To improve the stitch, do NOT use `--skip-stitch` (it skips Stage 1).
+
+## 1. STAGE 1 — Stitching
+
+Pairing now uses **VIO position** (fix#13) — robust on any survey pattern. **fix#12:** `discover()` takes correct `row,col` from `coordinates.csv`. **fix#13:** `select_pairs()` pairs by VIO KNN + temporal — the graph never disconnects. K: radius 1 → 8-NN, radius 2 → 12-NN.
+
+| Parameter | Default | What / when |
+|---|---|---|
+| `GRID_RADIUS` | `1` | K-NN neighbours. Gaps / low overlap → `2` |
+| `MIN_INLIERS` | `30` | Min inliers to "match". Photos skipped → decrease (20); wrong pairs → increase (40) |
+| `MIN_INLIER_RATIO` | `0.20` | Too many rejected → decrease (0.15) |
+| `RANSAC_THRESH` | `5.0` | Distorted → decrease (3.0); few matches → increase (7.0) |
+| `SCALE_LO, SCALE_HI` | `0.40, 2.50` | Altitude varies a lot → widen |
+| `MATCH_W, MATCH_H` | `960, 544` | LoFTR input size (accuracy vs speed) |
+
+## 2. STAGE 2 — Field map + Yellow
+
+| Parameter | File | Default | What / when |
+|---|---|---|---|
+| `ARENA_LONG_FT` | fixed | `30.0` | Arena long edge (ft) |
+| `ARENA_SHORT_FT` | fixed | `25.0` | Arena short edge (ft) |
+| `PX_PER_M` | base | `150` | Rectified resolution (px/m) |
+| `SWAP_AXES` | fixed | `False` | x/y swapped vs ground-truth → `True` |
+
+**Yellow (`detect_yellow_corners`):** HSV hue gate `14–48`; `s ≥ 28` (faded tape → 20); `b*−a* ≥ 15` (faded → lower); **fill ≥ 0.60 reject** (solid feature rejected → raise). Otsu auto-threshold fallback. Debug: `stage2_field/yellow_mask_debug.jpg`.
+
+## 3. STAGE 3 — Matching / Detection (`stage3_robust.py`)
+
+| Parameter | Default | What / when |
+|---|---|---|
+| `MIN_FOUND_PEAK` | `0.14` | Found gate. Real target NOT FOUND → decrease (0.10); random → increase |
+| `VERIFY_MIN` | `0.45` | Verification floor. NOT FOUND → decrease (0.40); wrong match → increase (0.55) |
+| `AUTO_CALIBRATE` | `True` | Auto threshold from background (lenient only) |
+| `PEAK_RATIO` | `1.5` | Misses in dark arena → decrease (1.2) |
+| `PEAK_FLOOR` | `0.06` | Auto-cal absolute floor |
+| `TOPK` | `8` | Photos shortlisted by peak |
+| `CENTER_PREF` | `0.06` | Edge/half-cut target → increase (0.10) |
+| `ROTATIONS` | `(0,1,2,3)` | Rotation-invariance |
+| Color weight | `0.4 + 0.6×cs` | Colour causing errors → lower; distinct-colour → trust more |
+| `DRONE_HEIGHT` | `3.0` | Set to your altitude |
+| `FOV_H_DEG, FOV_V_DEG` | `90, 65` | Set to your camera |
+
+**Deliverables (11.3.8):** LR `lr_match/<t>.png` (128); HD `proof_hd/<t>.jpg` (sharp native ≥720); HD tight crop `half = max(hr*2.2, hw*0.06)`.
+
+**Resolution (LR-to-LR):** seed 64 ↔ drone 128, both `640→448` (DINOv2). HD 720 not in matching. `MATCH_LR` env var: `MATCH_LR=64` → drone 64 (see the 64×64 guide); default drone 128 = best; result of a MATCH_LR run is copied to `results_lr<N>/`.
+
+## 4. STAGE 4 — Coordinates, Frame, Dedup
+
+| Parameter | Default | What / when |
+|---|---|---|
+| `BASE_STATION_EXACT` | `True` | Origin = actual base station (Final). Yellow-corner origin → `False` |
+| `HEADING_ROT_DEG` | `0.0` | Rotate coords to assigned heading (0/90/180/270); direction wrong → negative |
+| `SEP_M` | `0.6` | Two targets closer → conflict. Genuinely close → decrease; duplicate → increase |
+| `AVG_R` | `0.5` | Average same-object candidates within this radius. Off → 0; more → increase |
+| `DUP_M` | `0.5` | Warning threshold |
+| `MAX_INSTANCES` | `1` | Unique targets → 1; multiple instances → 2/3 |
+| `EXTRA_VERIFY_MIN` | `0.60` | Strict verify for extra instances |
+
+## 5. Seed references (`make_lr.py`)
+
+| Parameter | Default | What / when |
+|---|---|---|
+| `LR_SIZE` | `(64, 64)` | Seed LR size (V4.0 11.3.1). Drone LR is separately 128 (10.4). Compare seed-64 ↔ drone-128 |
+| `SRC_DIR` | `reference/` | Input full-res references |
+| `OUT_DIR` | `targets/` | Output LR seeds |
+
+## 6. Quick error → parameter
+
+| Error | Parameter | Direction |
+|---|---|---|
+| Half/corner mosaic, photos DROP | fix#12/#13 (auto), `--radius 2`, `MIN_INLIERS` | log check / 2 / decrease |
+| Broken stitch / gaps | `GRID_RADIUS`, `MIN_INLIERS` | 2 / decrease |
+| Wrong field size | `ARENA_LONG_FT/SHORT_FT` | correct value |
+| Yellow line off | `detect_yellow_corners`: fill, `s`, `diff` | adjust |
+| x/y swapped | `SWAP_AXES` | `True` |
+| Coords shifted / wrong frame | `BASE_STATION_EXACT` / `HEADING_ROT_DEG` | True / heading |
+| Real target NOT FOUND | `MIN_FOUND_PEAK`, `VERIFY_MIN` | decrease |
+| Wrong/random match | `VERIFY_MIN`, colour weight | increase |
+| Edge/half-cut target | `CENTER_PREF` | increase |
+| Two targets at one spot | `SEP_M` | adjust |
+| Coord jitter | `AVG_R` | increase |
+| Multiple instances | `MAX_INSTANCES` | 2/3 |
+
+<div class="page-break"></div>
+
+# Parameters Guide — 64×64 Search Mode (`MATCH_LR=64`)
+
+Only for **64×64 LR-to-LR search** (seed-64 ↔ **drone-64**). For the default mode (seed-64 ↔ drone-128), see the Parameters Guide above.
+
+## 1. When / why
+
+- Only when the rulebook/organizer requires 64×64 matching (drone also at 64).
+- The default (drone 128) is **more accurate** — use 64×64 only if required.
+- At 64×64 the drone image is smaller → **blurrier** → DINOv2 features **weaker** → `peak/vsim` **lower** → localization a bit **coarser**.
+
+## 2. How to run
+
+**Terminal (recommended — tuned):**
+```
+MATCH_LR=64 MIN_FOUND_PEAK=0.11 VERIFY_MIN=0.40 CENTER_PREF=0.09 TOPK=10 \
+    python3 iroc_pipeline_fixed.py --skip-stitch
+```
+**Plain (default thresholds, weaker):** `MATCH_LR=64 python3 iroc_pipeline_fixed.py --skip-stitch`
+**Dashboard:** pipeline dropdown → "match 64×64 (LR)" → Run. Result copied to `results_lr64/`; view via Dashboard → View → 64×64.
+
+## 3. Tuned parameters (now settable via env vars)
+
+Features are weaker, so **lower** the thresholds (else real target NOT FOUND):
+
+| Parameter | Default (128) | **64×64 suggested** | Why |
+|---|---|---|---|
+| `MIN_FOUND_PEAK` | `0.14` | **`0.11`** (0.10–0.12) | weaker peak at 64 |
+| `VERIFY_MIN` | `0.45` | **`0.40`** (0.38–0.42) | weaker crop-sim |
+| `CENTER_PREF` | `0.06` | **`0.09`** | coarse localization → prefer centered |
+| `TOPK` | `8` | **`10`** | more candidates |
+| `AUTO_CALIBRATE` | `True` | `True` | keep |
+| `PEAK_RATIO` | `1.5` | `1.5` (or `1.3`) | more lenient in dark arena |
+
+Set via env-var (append to the command) or edit `stage3_robust.py`. Env unset → default (no effect on the default mode). If still NOT FOUND → lower further (0.09 / 0.36); if wrong match → raise back (0.12 / 0.42). Each target's `peak / V` prints in the terminal.
+
+## 4. Coords / dedup (small adjust)
+
+Coarser localization → more jitter → increase averaging:
+
+| Parameter | Default | 64×64 | Why |
+|---|---|---|---|
+| `AVG_R` | `0.5` | **`0.7`** | average more photos → smooth |
+| `SEP_M` | `0.6` | `0.6` (or `0.7`) | avoid false conflicts |
+
+Everything else (`BASE_STATION_EXACT`, `HEADING_ROT_DEG`, `MAX_INSTANCES`) = default.
+
+## 5. What does NOT change
+
+Stage 1 stitch, Stage 2 yellow / field scale, and the coordinate frame are **the same as default**. Only the Stage 3 matching resolution + thresholds are adjusted.
+
+## 6. Verify (compare both)
+
+Run 64×64 (tuned) → `results_lr64/`; run default → `results/`. Check `Found N/M` + `peak/V`; compare via the Dashboard View toggle. Both should find the same targets with close coords; some extra position error at 64×64 is acceptable, but targets must not be missed.
+
+## 7. One-line summary
+
+**64×64:** `MATCH_LR=64` + lower thresholds (`MIN_FOUND_PEAK≈0.11`, `VERIFY_MIN≈0.40`, `CENTER_PREF≈0.09`, `TOPK=10`) + `AVG_R≈0.7`. Result in `results_lr64/`. Stitch/field/coords same as default. The default (128) is always better — use 64×64 only when required.
+
+</script>
+
+<script>
+  try { document.getElementById('content').innerHTML = marked.parse(document.getElementById('md').textContent); }
+  catch(e){ document.getElementById('content').innerHTML = '<pre>'+document.getElementById('md').textContent.replace(/</g,'&lt;')+'</pre>'; }
+</script>

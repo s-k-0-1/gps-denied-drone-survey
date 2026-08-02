@@ -1,0 +1,33 @@
+{
+  "_comment": "EXAMPLE OUTPUT — this is what results/stage3_targets/targets.json looks like after a successful run. Coordinates are in metres, relative to the base station (VIO takeoff point).",
+  "targets": [
+    {
+      "target": "1",
+      "found": true,
+      "method": "stage3_robust",
+      "drone_photo": "cp0011_r01c02.jpg",
+      "drone_pixel": [815, 371],
+      "drone_photo_wh": [1280, 720],
+      "map_xyz": { "x": 3.79, "y": 1.92, "z": 3.0 }
+    },
+    {
+      "target": "2",
+      "found": true,
+      "method": "stage3_robust",
+      "drone_photo": "cp0013_r01c00.jpg",
+      "drone_pixel": [403, 347],
+      "drone_photo_wh": [1280, 720],
+      "map_xyz": { "x": 1.722, "y": 5.123, "z": 2.988 }
+    },
+    {
+      "target": "3",
+      "found": true,
+      "method": "stage3_robust",
+      "drone_photo": "cp0017_r02c03.jpg",
+      "drone_pixel": [1031, 491],
+      "drone_photo_wh": [1280, 720],
+      "map_xyz": { "x": 6.305, "y": 3.936, "z": 2.972 }
+    }
+  ],
+  "origin_enu": { "x": -0.429, "y": 0.706, "z": -0.007 }
+}

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Team LUMA · ASCEND Base Station — IRoC-U 2026</title>
+<link rel="stylesheet" href="/static/style.css?v=25" />
+<script type="module"
+  src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+</head>
+<body>
+
+<!-- ══════════════════ SIDEBAR (jump to any section) ══════════════════ -->
+<nav class="sidebar">
+  <div class="side-brand"><span class="logo">▲</span> LUMA</div>
+  <button class="side-link" data-go="sec-photos">📷 Drone Photos</button>
+  <button class="side-link" data-go="sec-2d">🗺️ 2D Map</button>
+  <button class="side-link" data-go="sec-3d">🧊 3D Map</button>
+  <button class="side-link" data-go="sec-stages">⚙️ Stages</button>
+  <button class="side-link" data-go="sec-results">🎯 HD Results</button>
+  <button class="side-link" data-go="sec-dock">🔌 Docking &amp; Charging</button>
+  <button class="side-link" data-go="sec-files">📁 Result Files</button>
+  <button class="side-link" data-go="sec-logs">📜 Logs</button>
+</nav>
+
+<div class="content">
+<!-- ══════════════════ ONE LONG SCROLL PAGE ══════════════════ -->
+<main class="scroll-page" id="scrollPage">
+
+<!-- TOP BAR (scrolls away on scroll down) -->
+<header class="mission panel">
+  <div class="mc-left">
+    <div class="brand">
+      <span class="logo">▲</span>
+      <div>
+        <div class="title">TEAM&nbsp;LUMA <span class="title-sub">· ASCEND BASE STATION</span></div>
+        <div class="subtitle">IRoC-U 2026 — ISRO Robotics Challenge</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mc-right">
+    <div class="stat"><span class="stat-k">PHOTOS</span><span class="stat-v mono" id="tPhotos">0</span></div>
+    <div class="stat"><span class="stat-k">LINK</span>
+      <span class="stat-v"><span id="linkDot" class="dot"></span><span id="linkLabel">—</span></span></div>
+    <div class="stat"><span class="stat-k">TIMER</span><span class="stat-v mono" id="timer">00:00</span></div>
+    <div class="stat"><span class="stat-k">SORTIE</span><span class="stat-v mono" id="sortie">0</span></div>
+    <div class="link-select">
+      <label>Link</label>
+      <select id="linkMode">
+        <option value="simulator">Simulator</option>
+        <option value="mavlink">MAVLink (auto-fallback)</option>
+        <option value="auto">Auto</option>
+      </select>
+    </div>
+    <div class="pipe-toggle">
+      <label class="switch">
+        <input type="checkbox" id="runPipe" checked />
+        <span class="slider"></span>
+      </label>
+      <span>Run pipeline</span>
+      <select id="pipeJob" title="Pipeline job">
+        <option value="full">full</option>
+        <option value="skip_stitch">skip-stitch</option>
+        <option value="skip_match">skip-match</option>
+        <option value="match_only">match-only</option>
+        <option value="match_lr64">match 64×64 (LR)</option>
+        <option value="full_3d">full + 3D</option>
+        <option value="reconstruct3d">3D only</option>
+      </select>
+      <button class="btn tiny" id="btnRunPipe">Run</button>
+      <button class="btn tiny danger" id="btnStopPipe">Stop</button>
+    </div>
+    <div class="link-select">
+      <label>View</label>
+      <select id="resultSet" title="Result view (default 128 / 64×64)">
+        <option value="default">Default (128)</option>
+        <option value="lr64">64×64</option>
+      </select>
+    </div>
+  </div>
+</header>
+
+  <!-- 1 · DRONE PHOTOS (square grid) -->
+  <section class="block" id="sec-photos">
+    <div class="block-head">
+      <h2>Drone Photos</h2>
+      <span class="found" id="photoCount">0 photos</span>
+      <span class="hint">received from ASCEND — click to enlarge</span>
+    </div>
+    <div class="photo-grid" id="photosGrid">
+      <div class="map-empty">No photos received yet.</div>
+    </div>
+  </section>
+
+  <!-- 2 · 2D MAP (full size) -->
+  <section class="block" id="sec-2d">
+    <div class="block-head">
+      <h2>2D Map</h2>
+      <span class="arena-tools" id="mapTools">
+        <button class="btn tiny" data-zoom="out" title="Zoom out">−</button>
+        <button class="btn tiny" data-zoom="fit" title="Fit to screen">Fit</button>
+        <button class="btn tiny" data-zoom="in" title="Zoom in">+</button>
+        <span class="zoom-lvl mono" id="zoomLvl">100%</span>
+      </span>
+      <button class="btn tiny" data-full="map2dSec" title="Fullscreen">⛶ Full</button>
+    </div>
+    <div class="map-section" id="map2dSec">
+      <div class="map-frame" id="mapFrame">
+        <div class="map-canvas" id="mapCanvas">
+          <img id="arenaImg" alt="arena map" />
+        </div>
+        <div class="map-empty" id="mapEmpty">Run the pipeline to generate the annotated arena map.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · 3D MAP (full size) -->
+  <section class="block" id="sec-3d">
+    <div class="block-head">
+      <h2>3D Map</h2>
+      <button class="btn tiny" data-full="map3dSec" title="Fullscreen">⛶ Full</button>
+    </div>
+    <div class="map-section" id="map3dSec">
+      <div class="m3d-frame">
+        <model-viewer id="mv" camera-controls auto-rotate shadow-intensity="1"
+          exposure="1" ar="false" disable-pan
+          style="width:100%;height:100%;background:#eef1f6">
+        </model-viewer>
+        <div class="map-empty" id="modelEmpty">Loading 3D model… (run "full + 3D" if none appears)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · STAGES (all stacked) -->
+  <section class="block" id="sec-stages">
+    <div class="block-head"><h2>Pipeline Stages</h2></div>
+    <div class="stages-box" id="stagesBox">
+      <div class="map-empty">No stage outputs yet — run the pipeline.</div>
+    </div>
+  </section>
+
+  <!-- 5 · HD RESULTS (1 → 2 → 3 → 4, each titled) -->
+  <section class="block" id="sec-results">
+    <div class="block-head">
+      <h2>HD Results</h2>
+      <span class="found" id="foundBadge">Found 0 / 0</span>
+      <span class="found" id="foundBadge2" style="display:none">0</span>
+    </div>
+    <div class="results-list" id="resultsGrid">
+      <div class="map-empty">No results yet — run the pipeline.</div>
+    </div>
+  </section>
+
+  <!-- 6 · DOCKING & CHARGING (ESP32 logs — separate from flight logs) -->
+  <section class="block" id="sec-dock">
+    <div class="block-head">
+      <h2>Docking &amp; Charging</h2>
+      <span class="hint" id="dockEsp">ESP: not registered</span>
+      <span class="dock-actions">
+        <button class="btn tiny" id="btnDockStart">Start Docking</button>
+        <button class="btn tiny danger" id="btnDockStop">STOP</button>
+        <button class="btn tiny ghost" id="clearDock">clear</button>
+      </span>
+    </div>
+    <div class="log-console dock-console" id="dockConsole"></div>
+  </section>
+
+  <!-- 7 · RESULT FILES -->
+  <section class="block" id="sec-files">
+    <div class="block-head">
+      <h2>Result Files</h2>
+      <span class="hint">all csv / json / xlsx in results/</span>
+      <button class="btn tiny" id="btnOpenResults">📂 Open results folder</button>
+    </div>
+    <div class="files-list" id="filesList">
+      <div class="map-empty">No result files yet.</div>
+    </div>
+  </section>
+
+  <!-- 7 · LOGS -->
+  <section class="block" id="sec-logs">
+    <div class="block-head">
+      <h2>Logs / Status</h2>
+      <button class="btn tiny ghost" id="clearLogs">clear</button>
+    </div>
+    <div class="log-console" id="logConsole"></div>
+  </section>
+</main>
+
+<!-- ══════════════════ LIGHTBOX MODAL ══════════════════ -->
+<div class="modal" id="modal">
+  <button class="modal-nav prev" id="modalPrev" title="Previous (←)">‹</button>
+  <button class="modal-nav next" id="modalNext" title="Next (→)">›</button>
+  <div class="modal-box">
+    <div class="modal-head">
+      <span id="modalTitle" class="mono">x=.. y=.. z=.. m</span>
+      <span class="modal-count mono" id="modalCount"></span>
+      <button class="btn tiny" id="modalClose">✕ close</button>
+    </div>
+    <img id="modalImg" alt="HD proof" />
+  </div>
+</div>
+
+<footer class="statusbar">
+  <span id="cfgBase">base: —</span>
+  <span id="cfgCsv">csv: —</span>
+  <span id="cfgModel">3d: —</span>
+  <span id="wsState" class="ws-off">● disconnected</span>
+</footer>
+</div><!-- /.content -->
+
+<script src="/static/app.js?v=25"></script>
+</body>
+</html>
