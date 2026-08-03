@@ -79,8 +79,8 @@ More debug views: [`docs/images/`](docs/images/) · Expected output format: [`ex
 
 ```bash
 # 1. clone
-git clone https://github.com/<your-username>/ascend_iroc_2026_team_LUMA.git
-cd ascend_iroc_2026_team_LUMA
+git clone https://github.com/<your-username>/gps-denied-drone-survey.git
+cd gps-denied-drone-survey
 
 # 2. install (Python 3.10+)
 pip install -r requirements.txt --break-system-packages
@@ -128,7 +128,7 @@ Read these in order — they are written for someone who has never seen this pro
 ## Repository structure
 
 ```
-ascend_iroc_2026_team_LUMA/
+gps-denied-drone-survey/
 ├── iroc_pipeline_fixed.py     ← MAIN entry point (all fixes applied)
 ├── iroc_pipeline.py           ← base pipeline: stitching, field map, annotation
 ├── stage3_robust.py           ← target matcher (DINOv2 semantic, LR-to-LR)

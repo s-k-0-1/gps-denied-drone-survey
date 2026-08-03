@@ -77,8 +77,8 @@ git --version
 
 ```bash
 cd ~
-git clone https://github.com/<your-username>/ascend_iroc_2026_team_LUMA.git
-cd ascend_iroc_2026_team_LUMA
+git clone https://github.com/<your-username>/gps-denied-drone-survey.git
+cd gps-denied-drone-survey
 ```
 
 Never used git before? → [06 — Git & GitHub](06_GIT_GITHUB.md)
@@ -248,7 +248,7 @@ mavlink-routerd -c /etc/mavlink-router/main.conf
 ## 11. Verify the whole install
 
 ```bash
-cd ~/ascend_iroc_2026_team_LUMA
+cd ~/gps-denied-drone-survey
 
 # 1. libraries import cleanly
 python3 -c "import cv2, numpy, scipy, torch, kornia; print('pipeline OK')"
@@ -300,8 +300,8 @@ wsl --install -d Ubuntu-22.04            # then restart
 
 # inside Ubuntu:
 sudo apt update && sudo apt install -y python3 python3-pip git
-git clone https://github.com/<your-username>/ascend_iroc_2026_team_LUMA.git
-cd ascend_iroc_2026_team_LUMA
+git clone https://github.com/<your-username>/gps-denied-drone-survey.git
+cd gps-denied-drone-survey
 pip install -r requirements.txt --break-system-packages
 pip install -r base_station/requirements.txt --break-system-packages
 

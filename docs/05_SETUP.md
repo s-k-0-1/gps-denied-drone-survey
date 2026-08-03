@@ -48,8 +48,8 @@ Ubuntu instructions above from inside that terminal.
 
 ```bash
 cd ~
-git clone https://github.com/<your-username>/ascend_iroc_2026_team_LUMA.git
-cd ascend_iroc_2026_team_LUMA
+git clone https://github.com/<your-username>/gps-denied-drone-survey.git
+cd gps-denied-drone-survey
 ```
 
 New to git? See [06 — Git & GitHub](06_GIT_GITHUB.md).
@@ -130,7 +130,7 @@ Then compare against `ground_truth.txt` from the generator.
 ### 6.1 Folder layout
 
 ```
-ascend_iroc_2026_team_LUMA/
+gps-denied-drone-survey/
 ├── drone_photos/            ← HD photos + coordinates.csv   (from the Jetson)
 └── targets/                 ← seed images, 64×64            (what to look for)
 ```

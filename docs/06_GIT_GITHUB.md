@@ -50,7 +50,7 @@ git config --global --list
 1. Go to <https://github.com> and sign in (create an account if needed).
 2. Click **+** (top right) → **New repository**.
 3. Fill in:
-   - **Repository name:** `ascend_iroc_2026_team_LUMA`
+   - **Repository name:** `gps-denied-drone-survey`
    - **Description:** `Autonomous GPS-denied drone survey & feature localization`
    - **Public**
    - ⚠️ **Do NOT** tick "Add a README", ".gitignore" or "license" — we already have them.
@@ -59,7 +59,7 @@ git config --global --list
 Keep that page open — it shows your repository URL:
 
 ```
-https://github.com/<your-username>/ascend_iroc_2026_team_LUMA.git
+https://github.com/<your-username>/gps-denied-drone-survey.git
 ```
 
 ---
@@ -139,7 +139,7 @@ git commit -m "Initial commit: ASCEND pipeline, dashboard, ESP32 firmware, docs"
 git branch -M main
 
 # 3. connect to GitHub  (replace <your-username>)
-git remote add origin https://github.com/<your-username>/ascend_iroc_2026_team_LUMA.git
+git remote add origin https://github.com/<your-username>/gps-denied-drone-survey.git
 
 # 4. upload
 git push -u origin main
@@ -192,8 +192,8 @@ That's the whole loop. Commit often; each commit is a restore point.
 ## 9. Setting it up on another computer
 
 ```bash
-git clone https://github.com/<your-username>/ascend_iroc_2026_team_LUMA.git
-cd ascend_iroc_2026_team_LUMA
+git clone https://github.com/<your-username>/gps-denied-drone-survey.git
+cd gps-denied-drone-survey
 pip install -r requirements.txt --break-system-packages
 ```
 
@@ -268,7 +268,7 @@ git init
 git add -A
 git commit -m "Initial commit (clean history)"
 git branch -M main
-git remote add origin https://github.com/<your-username>/ascend_iroc_2026_team_LUMA.git
+git remote add origin https://github.com/<your-username>/gps-denied-drone-survey.git
 git push -f origin main        # -f overwrites the remote
 ```
 
@@ -318,7 +318,7 @@ git status --short | head -40        # ← confirm NO photos / results
 
 git commit -m "Initial commit: ASCEND pipeline, dashboard, ESP32 firmware, docs"
 git branch -M main
-git remote add origin https://github.com/<your-username>/ascend_iroc_2026_team_LUMA.git
+git remote add origin https://github.com/<your-username>/gps-denied-drone-survey.git
 git push -u origin main              # username + TOKEN
 ```
 
