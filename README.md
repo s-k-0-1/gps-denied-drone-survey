@@ -7,10 +7,6 @@ photos into one map, finds the required target features in that map using a sema
 It also includes a live web dashboard and the ESP32 firmware for the auto-docking /
 battery-charging base station.
 
-> **Scope note:** this repository covers **everything except the flight controller / autonomy
-> code** (how the drone actually flies its mission). That part is maintained separately by
-> another team member.
-
 ---
 
 <img src="docs/images/architecture.svg" width="900">
