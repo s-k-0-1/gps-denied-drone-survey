@@ -1,11 +1,25 @@
 # ASCEND — Autonomous Survey & Feature Localization
 ### Team LUMA · IRoC-U 2026 (ISRO Robotics Challenge)
 
-Ground-station software for an autonomous survey drone: it stitches the drone's aerial
-photos into one map, finds the required target features in that map using a semantic
-(deep-learning) matcher, and reports each target's real-world coordinates — **without GPS**.
-It also includes a live web dashboard and the ESP32 firmware for the auto-docking /
-battery-charging base station.
+**A drone flies over an arena and takes photos. This software tells you exactly where the
+objects of interest are — in metres, without GPS.**
+
+Give it the aerial photos and a small reference image of what to look for, and it will:
+
+1. **Stitch** the overlapping photos into a single top-view map of the arena.
+2. **Straighten** that map and scale it to real-world metres using the arena boundary.
+3. **Find** each reference object in the survey using a deep-learning (semantic) matcher — one
+   that still recognises the object under different rotation, lighting and scale.
+4. **Report** each object's coordinates relative to the base station, with a low-resolution and a
+   high-resolution proof image.
+
+Position comes from the drone's camera and Pixhawk visual-inertial odometry, so the whole system
+works **without GPS** — a hard requirement of the challenge, and a necessity anyway since GPS is
+accurate to metres while this task needs ~0.1 m.
+
+The repository also contains a **live web dashboard** (telemetry, maps, detected targets, logs,
+one-click pipeline runs) and the **ESP32 firmware** for the auto-docking and battery-charging base
+station.
 
 ---
 
