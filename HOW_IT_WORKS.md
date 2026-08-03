@@ -1,8 +1,10 @@
-# ASCEND Pipeline — How It Works (Full Theory · Viva Guide)
+# ASCEND Pipeline — How It Works
 
 **Team LUMA · Drone ASCEND · IRoC-U 2026 · Rulebook V4.0 (Final Field Round)**
 
-The **theory** of the whole system + **how each part works** + **which image is compared at what size/type**. For the viva — a deep explanation of every stage.
+A complete explanation of how the system works: what each stage does, how the algorithms work, and
+which image is compared against which at what resolution. Read this if you are using or modifying
+the code.
 
 ---
 
@@ -195,7 +197,7 @@ HD photos → ODM: SIFT → match → SfM (bundle adj) → sparse cloud → MVS 
 
 ---
 
-## 6. Key algorithms — 1-line glossary (useful in the viva)
+## 6. Key algorithms — 1-line glossary
 
 | Term | What it is |
 |---|---|
@@ -226,29 +228,36 @@ HD photos → ODM: SIFT → match → SfM (bundle adj) → sparse cloud → MVS 
 
 ---
 
-## 8. Viva Q&A
+## 8. Design decisions — why the system is built this way
 
-**Q: Do you use GPS?** → No. Pixhawk VIO / optical-flow.
+Useful context if you are reading or modifying the code.
 
-**Q: The rulebook asks for LR-to-LR — do you do it?** → Yes. HD → 128 LR (10.4), compared with the 64 seed (V4) via DINOv2.
+| Decision | Reason |
+|---|---|
+| **No GPS — VIO / optical flow instead** | Required by the rules, and GPS (metre-level) could not reach the ~0.1 m accuracy the task needs anyway. |
+| **Coordinates measured in the rectified arena frame, not by integrating VIO** | VIO drifts over a survey, so integrated positions get progressively worse. The yellow boundary is a fixed physical reference, so the error does not grow with flight time. This is the most important accuracy decision in the project. |
+| **Origin taken from VIO (0,0) = take-off point** | The base station's position is assigned at run time, so the origin cannot be hard-coded — it has to be measured. |
+| **Scale from known arena dimensions** | Scale derived from VIO alone came out ≈ half the true size. Using the real 35×25 ft removes that error completely. |
+| **DINOv2 (semantic) for target matching** | The target appears at a different height, angle, rotation and lighting than the seed. Template matching compares raw pixels and breaks; SIFT-style matchers need repeatable keypoints that low-texture paving does not provide. Semantic features match *what a thing is*, which survives all of those changes. |
+| **Object prototype *minus* background prototype** | Without the subtraction, plain ground scores highly and the peak lands on empty floor. Scoring "object-like relative to its surroundings" is what actually localizes the feature. |
+| **Two independent accept gates (`peak` + `vsim`)** | `peak` says something object-like is present; `vsim` says it really resembles the seed. Requiring both removes distractors that pass only one. If either fails, the target is reported NOT FOUND — a wrong coordinate is worse than an honest miss. |
+| **Drone image at 128, not 64** | §10.4 specifies 128 for the drone image, and testing showed 64 is visibly blurrier with weaker responses and coarser localization. |
+| **LoFTR (detector-free) for stitching** | Plain paving and gravel give too few repeatable keypoints for classical detectors; LoFTR produces correspondences even on weak texture. |
+| **Pairing photos by VIO distance instead of a grid** | Grid pairing assumed a clean lawnmower survey. On a centre-start flight many photos had no grid neighbour, the match graph disconnected, and half the arena was missing. Physical distance is what actually predicts overlap. |
+| **Bundle adjustment + loop closure** | Pairwise errors compound along a chain and shear the mosaic. Optimising all transforms together keeps the arena rectangular. |
+| **Multi-photo position averaging** | A target seen in several photos gives slightly different positions; averaging cancels per-photo mapping error. |
+| **Mutual exclusion between targets** | Targets are unique, so two of them at one spot means a mistake — the weaker match is reassigned to its next-best candidate instead of silently reporting a duplicate. |
+| **CLAHE + colour histogram** | Seed and survey photos are taken under different exposures; CLAHE equalizes local contrast, and the colour check separates objects that are structurally similar but differently coloured. |
+| **OpenDroneMap for 3D instead of custom code** | Full SfM/MVS is a separate, heavy problem. Reusing a mature implementation is more reliable, and the step is optional so it never blocks the main result. |
+| **Battery voltage read by the ESP32, not the pipeline** | The pipeline runs offline after the sortie; voltage is a live hardware measurement. Each subsystem reports only what it actually knows. |
 
-**Q: At what size is the comparison?** → **seed-64 ↔ drone-128**. Both processed at `640→448`. **HD (720) is NOT in matching.**
+### Known limitation
 
-**Q: If the sizes differ, how do they match?** → DINOv2 feature vectors, compared by **cosine in feature-space** — not pixel-to-pixel.
-
-**Q: What if 64×64 matching is required?** → `MATCH_LR=64 python3 iroc_pipeline_fixed.py --skip-stitch` — its result is copied to a separate `results_lr64/` (so you can compare both). Default (drone 128) is best.
-
-**Q: How does stitching work?** → LoFTR matches neighbouring drone-HD photos (neighbours chosen by VIO) → RANSAC homography → BFS → bundle adjustment → blend.
-
-**Q: How do you match on low-texture ground?** → LoFTR (stitching) + DINOv2 (matching) are both **semantic/dense** — they work where SIFT/geometric methods fail.
-
-**Q: How is the 3D built?** → `3d.py` → OpenDroneMap: SIFT → match → **SfM** (camera poses + sparse) → **MVS** (dense cloud) → mesh → texture → `model.glb` + orthophoto + **DSM** (elevation).
-
-**Q: Coordinate origin?** → Base station (VIO takeoff); targets relative to it, in metres.
-
-**Q: How do you avoid false positives?** → `peak` + `vsim` thresholds; below them → NOT FOUND. Plus object-vs-background prototype + colour + mutual-exclusion.
-
-**Q: Accuracy?** → ~0.1 m on distinct features (rectified-pixel + averaging).
+Everything downstream depends on the **yellow boundary being detected correctly**. If the mask
+picks up ground or the base-station crate, the corners shift and every coordinate shifts with them.
+Mitigations: a saturation threshold (`YELLOW_S`) that isolates bright tape, rejection of solid
+blobs (real tape is thin), and `yellow_mask_debug.jpg` — the first file to check whenever results
+look wrong.
 
 ---
 
