@@ -11,9 +11,9 @@ checklist below.
 |---|---|---|
 | HD survey photos | `drone_photos/*.jpg` (1280×720) | Captured by ASCEND |
 | Position log | `drone_photos/coordinates.csv` | Must contain `x_enu, y_enu, z_enu, yaw, row, col, image_file` — stitching fixes #12/#13 depend on these |
-| Seed references | `targets/*.png` (64×64) | Provided by the organizers in the final round; for practice run `python3 make_lr.py` (from `reference/`) |
+| Seed references | `targets/*.png` (64×64) | One small crop per object to find. Build them from full-res photos with `python3 make_lr.py` (reads `reference/`) |
 
-> **Battery voltage (11.3.8d)** comes from the ESP32 straight to the dashboard — nothing to do in
+> **Battery voltage** comes from the ESP32 straight to the dashboard — nothing to do in
 > the pipeline.
 
 ---

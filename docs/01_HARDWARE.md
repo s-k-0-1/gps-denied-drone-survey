@@ -55,7 +55,8 @@ The system has three physical units that talk to each other over one WiFi networ
 | 12 | Charging pads | 2 contact pads (Pad A / Pad B) on the landing gear | 2 | Docking contact + charge input |
 | 13 | Telemetry link | WiFi (shared network) | 1 | Live telemetry + file transfer |
 
-> **No GPS module is used for localization** — the rulebook prohibits GNSS. Position comes
+> **No GPS module is used for localization** — the system is designed for GPS-denied operation
+> (indoors, or where metre-level GPS accuracy is not enough). Position comes
 > from the camera + Pixhawk VIO / optical flow.
 
 ### 2.2 Base station (docking + charging)

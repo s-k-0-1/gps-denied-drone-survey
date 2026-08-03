@@ -1,6 +1,6 @@
 # ASCEND Pipeline — How It Works
 
-**Team LUMA · Drone ASCEND · IRoC-U 2026 · Rulebook V4.0 (Final Field Round)**
+**GPS-denied aerial survey → feature localization**
 
 A complete explanation of how the system works: what each stage does, how the algorithms work, and
 which image is compared against which at what resolution. Read this if you are using or modifying
@@ -14,8 +14,8 @@ Three different images, three jobs:
 
 | Image | Size | Source | Job |
 |---|---|---|---|
-| **Seed / reference** | **64×64** | Provided by **organizers** in the final round (V4.0, 11.3.1) | matching reference |
-| **Drone LR (ASCEND)** | **128×128** | ASCEND captures HD `1280×720` → down-samples (10.4) | searched during matching |
+| **Seed / reference** | **64×64** | Supplied as input — a small crop of the object to find | matching reference |
+| **Drone LR** | **128×128** | Down-sampled automatically from each HD `1280×720` photo | searched during matching |
 | **HD photo** | **1280×720** | ASCEND onboard camera | stitching + final HD proof + 3D |
 
 **Match (Stage 3) = seed-64 ↔ drone-128** — via DINOv2 features (different sizes are fine). **HD (720) is NOT used in matching.**
@@ -24,20 +24,28 @@ Three different images, three jobs:
 
 ## 1. Problem (one line)
 
-The drone autonomously surveys the arena, logging HD photos + position; from those photos we **find the targets** and report their **coordinates** — **without GPS** (the rulebook bans GPS/GNSS). Position comes from **camera + Pixhawk VIO** (visual-inertial odometry / optical flow).
+The drone autonomously surveys an arena, logging HD photos + position; from those photos we **find the target objects** and report their **coordinates** — **without GPS**. Position comes from **camera + Pixhawk VIO** (visual-inertial odometry / optical flow).
 
 **Input:** `drone_photos/` (HD + `coordinates.csv`) + `targets/` (seed 64×64).
 **Output (per target):** LR image, HD image, base-station-relative `(x, y, z)`. Plus an optional 3D map.
 
 ---
 
-## 2. The rulebook's LR workflow (10.4)
+## 2. The low-resolution matching workflow
 
-Two-phase LR-to-LR matching:
-1. **Reference/seed (before):** an LR image, 64×64. **Organizers provide it** in the final round (teams create it in elimination).
-2. **After the sortie:** ASCEND **captures HD** → **down-samples that same HD** → **128×128 LR** (LR ASCEND image) → **compares/matches with the seed**.
+Matching happens between two small images, not between full-resolution ones:
 
-> Our pipeline does exactly this: `build_drone_lr` HD → 128 LR (`drone_photos_lr/`), then DINOv2 matches it against the 64-seed. ✅
+1. **Reference / seed (prepared beforehand):** a small crop, 64×64, of the object to find. Either
+   captured directly or down-sampled from a full-resolution photo (`make_lr.py` does this).
+2. **After the survey:** each HD photo (`1280×720`) is **down-sampled to 128×128**, and the seed is
+   searched for inside it.
+
+> In code: `build_drone_lr()` creates `drone_photos_lr/` from the HD photos, then DINOv2 matches
+> the 64×64 seed against those 128×128 images.
+
+**Why work at low resolution:** the search runs over every photo, and the feature extractor has a
+fixed input size anyway — so full HD adds cost without adding useful signal. Matching in feature
+space also means the seed and the survey image do not need the same dimensions.
 
 ---
 
@@ -132,7 +140,7 @@ Two-phase LR-to-LR matching:
 **Theory + steps:**
 
 1. **Homography chaining:** target pixel (drone photo) → **`photo_to_H`** (Stage 1) → **mosaic pixel** → **`M_persp`** (Stage 2) → **rectified pixel** → `÷ PX_PER_M` → **metres**.
-2. **Base-station origin:** VIO `(0,0)` = drone **takeoff = base station**. We know each photo's VIO(x,y) and its rectified position → using `A` (VIO→mosaic affine, SIFT-calibrated) we project **VIO(0,0)** into the rectified frame → the base station's field-position. **Subtract this from every target** → base-station-relative coordinates (rulebook 11.3.4).
+2. **Base-station origin:** VIO `(0,0)` = drone **takeoff = base station**. We know each photo's VIO(x,y) and its rectified position → using `A` (VIO→mosaic affine, SIFT-calibrated) we project **VIO(0,0)** into the rectified frame → the base station's field-position. **Subtract this from every target** → base-station-relative coordinates.
 3. **Save:** `lr_match/<t>.png` (LR), `proof_hd/<t>.jpg` (sharp native ≥720 HD), `targets.json` (coords), `annotated_field.jpg` (circle + label on the map).
 
 ---
@@ -177,8 +185,8 @@ HD photos → ODM: SIFT → match → SfM (bundle adj) → sparse cloud → MVS 
 
 | | Source size | to_work | DINOv2 input |
 |---|---|---|---|
-| **Seed** | **64×64** (V4.0) | 640×480 | 448×448 |
-| **Drone (match)** | **128×128** (10.4) | 640×480 | 448×448 |
+| **Seed** | **64×64** | 640×480 | 448×448 |
+| **Drone (match)** | **128×128** | 640×480 | 448×448 |
 | HD 1280×**720** | *not in matching* — stitch + HD proof + 3D | — | — |
 
 ➡️ **Comparison = seed-64 ↔ drone-128 (LR-to-LR).** Inside DINOv2 both go to 448 (32×32 patches) — this adds no new information, it's just the feature-extractor's fixed input size. The match is by **cosine** (not pixel-to-pixel), so different sizes are fine.
@@ -191,7 +199,7 @@ HD photos → ODM: SIFT → match → SfM (bundle adj) → sparse cloud → MVS 
 
 - **No GPS/GNSS** — Pixhawk VIO / optical-flow (`coordinates.csv`: `x_enu, y_enu, z_enu, yaw`).
 - **VIO (Visual-Inertial Odometry):** fuses camera frames + IMU (accelerometer/gyro) to track the drone's position/heading — without satellites.
-- **Origin (0,0) = base station** = takeoff (VIO 0,0). Coordinates are relative to it (11.3.4). The base station can be anywhere — controlled by the `BASE_STATION_EXACT` flag.
+- **Origin (0,0) = base station** = takeoff (VIO 0,0). Coordinates are relative to it. The base station can be anywhere — controlled by the `BASE_STATION_EXACT` flag.
 - **Accuracy:** the rectified-pixel frame (straightened by the yellow boundary) → distances between targets are exact (~0.1 m on distinct features).
 - **z** — from the Pixhawk (untouched). **Max height ~6 m** (final field constraint).
 
@@ -224,7 +232,7 @@ HD photos → ODM: SIFT → match → SfM (bundle adj) → sparse cloud → MVS 
 | Stage-1 VIO pairing (#12/#13) | center/corner/spiral — clean full stitch for every pattern |
 | Base-station origin (#1) | coordinates relative to the base station |
 | Field scale (#3) | true metric size from the known arena dimensions (35×25 ft) |
-| HD-720 + LR deliverables | rulebook 11.3.8 output |
+| HD-720 + LR deliverables | one low-res and one high-res proof image per target |
 
 ---
 
@@ -241,7 +249,7 @@ Useful context if you are reading or modifying the code.
 | **DINOv2 (semantic) for target matching** | The target appears at a different height, angle, rotation and lighting than the seed. Template matching compares raw pixels and breaks; SIFT-style matchers need repeatable keypoints that low-texture paving does not provide. Semantic features match *what a thing is*, which survives all of those changes. |
 | **Object prototype *minus* background prototype** | Without the subtraction, plain ground scores highly and the peak lands on empty floor. Scoring "object-like relative to its surroundings" is what actually localizes the feature. |
 | **Two independent accept gates (`peak` + `vsim`)** | `peak` says something object-like is present; `vsim` says it really resembles the seed. Requiring both removes distractors that pass only one. If either fails, the target is reported NOT FOUND — a wrong coordinate is worse than an honest miss. |
-| **Drone image at 128, not 64** | §10.4 specifies 128 for the drone image, and testing showed 64 is visibly blurrier with weaker responses and coarser localization. |
+| **Drone image at 128, not 64** | Testing showed 64 is visibly blurrier, with weaker feature responses and coarser localization; 128 keeps the search fast without that loss. |
 | **LoFTR (detector-free) for stitching** | Plain paving and gravel give too few repeatable keypoints for classical detectors; LoFTR produces correspondences even on weak texture. |
 | **Pairing photos by VIO distance instead of a grid** | Grid pairing assumed a clean lawnmower survey. On a centre-start flight many photos had no grid neighbour, the match graph disconnected, and half the arena was missing. Physical distance is what actually predicts overlap. |
 | **Bundle adjustment + loop closure** | Pairwise errors compound along a chain and shear the mosaic. Optimising all transforms together keeps the arena rectangular. |

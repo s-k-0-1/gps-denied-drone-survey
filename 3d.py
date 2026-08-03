@@ -280,9 +280,12 @@ def open_viewer(ply_path: Path):
         print("  [WARN] open3d not installed:  pip install open3d --break-system-packages")
     except Exception as e:
         print(f"  [WARN] viewer error: {e}")
-    # WSL pe OpenGL/Wayland window aksar fail karta hai -> Windows me kholo
-    win = str(ply_path).replace("/home/sachin", r"\\wsl.localhost\Ubuntu-22.04\home\sachin").replace("/", "\\")
-    print("\n  WSL me 3D GUI aksar nahi chalta. PLY ko WINDOWS me kholo (MeshLab/CloudCompare free):")
+    # A 3D GUI often fails under WSL (OpenGL/Wayland) -> open the file from Windows instead.
+    home = os.path.expanduser("~")
+    distro = os.environ.get("WSL_DISTRO_NAME", "Ubuntu")
+    win = str(ply_path).replace(home, rf"\\wsl.localhost\{distro}{home}").replace("/", "\\")
+    print("\n  If the 3D window does not open under WSL, open the PLY from Windows "
+          "(MeshLab / CloudCompare, both free):")
     print(f"    {win}")
 
 

@@ -2,7 +2,7 @@
   <rect width="980" height="560" fill="#ffffff"/>
 
   <text x="490" y="34" text-anchor="middle" font-size="19" font-weight="700" fill="#12324a">ASCEND — System Architecture</text>
-  <text x="490" y="54" text-anchor="middle" font-size="12" fill="#5d6878">Team LUMA · IRoC-U 2026 · GPS-free survey &amp; feature localization</text>
+  <text x="490" y="54" text-anchor="middle" font-size="12" fill="#5d6878">GPS-denied aerial survey &amp; feature localization</text>
 
   <!-- DRONE -->
   <rect x="30" y="80" width="270" height="180" rx="10" fill="#eef6ff" stroke="#2b7fff" stroke-width="1.5"/>

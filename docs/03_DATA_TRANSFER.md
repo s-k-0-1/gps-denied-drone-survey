@@ -56,7 +56,7 @@ photos overlap, and Stage 4 uses VIO `(0,0)` — the takeoff point — as the ba
 
 ```
 targets/
-├── feature_1.png      ← 64×64 seed images (provided by organizers in the final round)
+├── feature_1.png      ← 64×64 seed images (one per object you want to find)
 ├── feature_2.png
 └── feature_3.png
 ```
@@ -74,7 +74,7 @@ drone_photos_lr/          ← 128×128 LR versions, created automatically by the
 ```
 
 You never create this by hand — `build_drone_lr()` down-samples every HD photo to 128×128 on the
-first run. This is the "LR ASCEND image" the rulebook asks for.
+first run. These are the images the matcher actually searches.
 
 ---
 
@@ -230,7 +230,7 @@ cd ~/advanced_matcher
 # 1. copy the survey data across
 rsync -avh --progress jetson@<JETSON-IP>:~/survey/drone_photos/ drone_photos/
 
-# 2. put the seed images in targets/   (organizers' 64×64 images)
+# 2. put the seed images in targets/   (64×64 crops of what to find)
 
 # 3. run everything
 python3 iroc_pipeline_fixed.py

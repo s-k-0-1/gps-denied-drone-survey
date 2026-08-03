@@ -7,7 +7,7 @@ mode (seed-64 ↔ drone-128) see [PARAMETERS_GUIDE.md](PARAMETERS_GUIDE.md).
 
 ## 1. When and why
 
-- Use it only if the rulebook / organizers require matching at 64×64 (the drone image is also
+- Use it only if you specifically need matching at 64×64 (the drone image is also
   down-sampled to 64).
 - The default (**drone 128**) is **more accurate** — use 64×64 only when required.
 - At 64×64 the drone image is smaller and therefore **blurrier**, so DINOv2 features are

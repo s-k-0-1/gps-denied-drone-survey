@@ -32,8 +32,8 @@ git --version        # e.g. git version 2.34.1
 Use the same email as your GitHub account.
 
 ```bash
-git config --global user.name  "Sachin Kumar"
-git config --global user.email "24uec227@lnmiit.ac.in"
+git config --global user.name  "Your Name"
+git config --global user.email "you@example.com"
 git config --global init.defaultBranch main
 ```
 
@@ -51,7 +51,7 @@ git config --global --list
 2. Click **+** (top right) → **New repository**.
 3. Fill in:
    - **Repository name:** `ascend_iroc_2026_team_LUMA`
-   - **Description:** `Autonomous survey & feature localization for IRoC-U 2026 — Team LUMA`
+   - **Description:** `Autonomous GPS-denied drone survey & feature localization`
    - **Public**
    - ⚠️ **Do NOT** tick "Add a README", ".gitignore" or "license" — we already have them.
 4. Click **Create repository**.
@@ -294,7 +294,7 @@ git add docs/images && git commit -m "Add result screenshots" && git push
 ```
 
 **Releases** — repo page → **Releases** → **Create a new release** → tag `v1.0` →
-"IRoC-U 2026 final field round". Good for a submission snapshot.
+a short release note. Good for snapshotting a working version.
 
 ---
 
@@ -305,8 +305,8 @@ For your exact case, start to finish:
 ```bash
 # one-time git setup
 sudo apt install -y git
-git config --global user.name  "Sachin Kumar"
-git config --global user.email "24uec227@lnmiit.ac.in"
+git config --global user.name  "Your Name"
+git config --global user.email "you@example.com"
 git config --global init.defaultBranch main
 git config --global credential.helper store
 

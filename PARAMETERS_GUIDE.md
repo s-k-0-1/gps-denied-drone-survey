@@ -1,4 +1,4 @@
-# IRoC Pipeline — Parameters Guide (`iroc_pipeline_fixed.py`)
+# Parameters Guide (`iroc_pipeline_fixed.py`)
 
 This guide lists **all tunable parameters** stage-wise: what they do, **when to change** them (which error), and **how** (increase/decrease). To run, always:
 ```bash
@@ -115,15 +115,15 @@ Joins photos into an orthomosaic (LoFTR + bundle adjustment). **Pairing now uses
 - *Edge/half-cut* → increase `CENTER_PREF`.
 - Each target's `peak=.. V..` is printed in the terminal — tune from that.
 
-### 3d. Output deliverables (per target — rulebook 11.3.8)
+### 3d. Output images (per target)
 | Item | Default | File | When / how |
 |---|---|---|---|
-| **LR image** (11.3.8a) | `128×128` | `stage3_targets/lr_match/<t>.png` | Tight feature crop like the seed. Change size → `(128,128)` in matcher/`_regen` |
-| **HD proof** (11.3.8b) | native, **shorter side ≥720** | `stage3_targets/proof_hd/<t>.jpg` | SHARP native crop. Change `720` → in `sc/bh/bw` |
+| **LR image** | `128×128` | `stage3_targets/lr_match/<t>.png` | Tight feature crop like the seed. Change size → `(128,128)` in matcher/`_regen` |
+| **HD proof** | native, **shorter side ≥720** | `stage3_targets/proof_hd/<t>.jpg` | SHARP native crop. Change `720` → in `sc/bh/bw` |
 | HD tight crop size | `half = max(hr*2.2, hw*0.06)` | — | More/less background in HD → adjust `2.2` / `0.06` |
 
 ### 3e. Match resolution — LR-to-LR + `MATCH_LR` mode (`stage3_robust.py`)
-**Seed 64×64** (rulebook **V4.0**, provided by organizers) **↔ drone 128×128** (rulebook **10.4**: HD→128 down-sample). Matched via DINOv2 — different sizes are fine. **HD 720 is NOT in matching** (only stitch + proof).
+**Seed 64×64 ↔ drone 128×128** (HD down-sampled). Matched via DINOv2 — different sizes are fine. **HD 720 is NOT in matching** (only stitch + proof).
 
 **`MATCH_LR` env var — choose the drone's LR size (an option, no code change):**
 
@@ -146,7 +146,7 @@ Joins photos into an orthomosaic (LoFTR + bundle adjustment). **Pairing now uses
 ### 4a. Coordinate frame ⭐
 | Parameter | Default | What it does | When / how |
 |---|---|---|---|
-| **`BASE_STATION_EXACT`** | `True` | Origin (0,0) = **actual base station** (VIO takeoff), coords relative to it (rulebook 11.2.2/11.3.4) | Final round → `True` (base station anywhere). For qualifier/practice with yellow-corner origin → `False` |
+| **`BASE_STATION_EXACT`** | `True` | Origin (0,0) = **actual base station** (VIO takeoff), coords relative to it | Keep `True` when the base station can be anywhere. Use `False` to place the origin at the yellow corner instead |
 
 **Error → fix:** *coords shifted by a constant / wrong frame* → check the `[fix#1 base-origin] base station @ field (x,y)` log; the base station should be near takeoff. If it looks wrong → `BASE_STATION_EXACT=False` (yellow corner). If `A` (SIFT calib) fails it auto-falls-back to the yellow corner.
 
@@ -169,7 +169,7 @@ Joins photos into an orthomosaic (LoFTR + bundle adjustment). **Pairing now uses
 ## 5. Seed references (`make_lr.py`)
 | Parameter | Default | What it does | When / how |
 |---|---|---|---|
-| `LR_SIZE` | `(64, 64)` | Seed reference LR size (**rulebook V4.0, 11.3.1**) | V4.0 Final = **64** (organizers provide). Drone LR is separately 128 (10.4). Compare = seed-64 ↔ drone-128 |
+| `LR_SIZE` | `(64, 64)` | Seed reference size | Drone LR is separately 128, so the comparison is seed-64 ↔ drone-128 |
 | `SRC_DIR` | `reference/` | Input full-res references | — |
 | `OUT_DIR` | `targets/` | Output LR seeds (matcher reads from here) | — |
 

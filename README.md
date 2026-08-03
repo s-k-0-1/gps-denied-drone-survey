@@ -1,5 +1,5 @@
 # ASCEND — Autonomous Survey & Feature Localization
-### Team LUMA · IRoC-U 2026 (ISRO Robotics Challenge)
+### GPS-denied aerial mapping and object localization
 
 **A drone flies over an arena and takes photos. This software tells you exactly where the
 objects of interest are — in metres, without GPS.**
@@ -44,11 +44,15 @@ Plus:
 
 ---
 
-## Results (final field round)
+## Results
 
-- All required features detected and localized.
-- Coordinates reported relative to the base station, in metres, **GPS-free** (Pixhawk VIO / optical flow).
-- Deliverables produced automatically per target: LR image, HD image, coordinates.
+Validated on real flight data over a 35 × 25 ft arena:
+
+- All target features detected and localized, with no false positives.
+- Coordinates reported relative to the base station, in metres, **GPS-free** (VIO / optical flow).
+- Accuracy ≈ **0.1 m** on distinct features.
+- Per target, the pipeline automatically produces a low-resolution image, a high-resolution
+  proof image and the coordinates.
 
 ### What the pipeline produces
 
@@ -117,8 +121,7 @@ Read these in order — they are written for someone who has never seen this pro
 | [How It Works](HOW_IT_WORKS.md) | Full explanation of every stage and algorithm, plus the design decisions behind them |
 | [Parameters Guide](PARAMETERS_GUIDE.md) | Every tunable parameter, when to change it and why |
 | [Run Guide](RUN_GUIDE.md) | Run + validation checklist |
-| [64×64 Mode](PARAMETERS_64x64.md) | Tuning for the alternate 64×64 LR-to-LR matching mode |
-| [Declarations](DECLARATIONS_11.6.md) | Competition declarations: coordinate scheme, no-GPS, survey pattern, processing location |
+| [64×64 Mode](PARAMETERS_64x64.md) | Tuning for the alternate 64×64 matching mode |
 
 ---
 
@@ -161,20 +164,43 @@ Input photos and result folders are **not** committed to git (they are large) �
 
 ## Key design decisions
 
-- **No GPS/GNSS.** Position comes from the camera + Pixhawk VIO / optical flow, as required by the rulebook.
+- **No GPS/GNSS.** Position comes from the camera + Pixhawk VIO / optical flow. GPS is accurate to
+  metres, while this task needs ~0.1 m — and it is unavailable indoors anyway.
 - **Semantic matching, not template matching.** DINOv2 embeddings match a feature even under
   different rotation, lighting and scale — where SIFT/template methods fail on low-texture ground.
-- **LR-to-LR.** The drone's HD photos are down-sampled to 128×128 and compared against the
-  64×64 seed, following the rulebook's low-resolution matching workflow.
+- **Low-resolution matching.** The HD photos are down-sampled to 128×128 and matched against a
+  64×64 reference. Matching in feature space means the two sizes do not have to agree, and small
+  images keep the search fast.
 - **Coordinates relative to the base station**, computed in the rectified (straightened) arena
   frame so they stay accurate despite VIO drift.
 
 ---
 
-## Team
+## Security note
 
-**Team LUMA** — The LNM Institute of Information Technology, Jaipur
-IRoC-U 2026, ISRO Robotics Challenge — Unmanned Aerial Vehicle
+The repository ships with **placeholders and defaults, not real credentials**. Before deploying,
+set your own:
+
+| What | Where | Default |
+|---|---|---|
+| WiFi SSID / password | `esp32_firmware/full_base_station_wifi.ino` | `YOUR_WIFI_SSID` / `YOUR_WIFI_PASSWORD` |
+| Ground-PC address | same file, `BASE_URL` | `http://192.168.1.100:8000` |
+| Machine token | ESP `DOCK_TOKEN` **and** `IROC_TOKEN` on the dashboard (must match) | `CHANGE_ME` |
+| Dashboard login | env vars `IROC_USER` / `IROC_PASS` | `luma` / `ascend2026` |
+
+```bash
+IROC_USER=yourname IROC_PASS='a-strong-password' IROC_TOKEN='your-token' \
+    python3 -m base_station.server
+```
+
+Never commit real WiFi passwords, tokens or private IP addresses.
+
+---
+
+## Credits
+
+Built by **Team LUMA**, The LNM Institute of Information Technology, Jaipur — originally developed
+for the ISRO Robotics Challenge (IRoC-U 2026).
 
 ## License
 

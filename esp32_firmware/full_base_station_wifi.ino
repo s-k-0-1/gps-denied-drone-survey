@@ -17,15 +17,16 @@
 //  drone touches down) to start docking. That route is UNCHANGED.
 // ============================================================================
 
-// ---- network config (edit these to match your setup) ----
-static const char* WIFI_SSID   = "LUMA";
-static const char* WIFI_PASS   = "098765432";
-// ⚠️ PC's IP on the phone "LUMA" hotspot. Get it on the PC with:  hostname -I
-//    (DHCP can change it between sessions — set the PC to a static IP to keep it fixed.)
-static const char* BASE_URL    = "http://10.56.178.123:8000";
-// Shared token so machine calls bypass the dashboard password. Must match
-// IROC_TOKEN on the base station (default "lumadock").
-static const char* DOCK_TOKEN  = "lumadock";
+// ---- network config — EDIT ALL FOUR TO MATCH YOUR SETUP ----
+// ⚠️ Never commit real credentials to a public repository.
+static const char* WIFI_SSID   = "YOUR_WIFI_SSID";
+static const char* WIFI_PASS   = "YOUR_WIFI_PASSWORD";
+// Ground PC's IP on that network. Find it on the PC with:  hostname -I
+// (DHCP can change it between sessions — give the PC a static lease to keep it fixed.)
+static const char* BASE_URL    = "http://192.168.1.100:8000";
+// Shared token so machine-to-machine calls bypass the dashboard password.
+// Must match IROC_TOKEN on the base station. CHANGE THIS to your own value.
+static const char* DOCK_TOKEN  = "CHANGE_ME";
 
 // ---- transparent Serial → WiFi log mirror ----
 // Capture the real UART BEFORE we redirect the Serial name below.

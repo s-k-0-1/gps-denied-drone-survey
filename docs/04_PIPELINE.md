@@ -158,7 +158,7 @@ that photo*.
 
 | Input | Size | Note |
 |---|---|---|
-| Seed / reference | **64×64** | provided by organizers (`targets/`) |
+| Seed / reference | **64×64** | supplied as input in `targets/` |
 | Drone LR photos | **128×128** | auto-generated into `drone_photos_lr/` |
 
 Both are internally resized to 640×480, then to 448×448 for DINOv2 (a 32×32 patch grid). The
@@ -228,7 +228,7 @@ FINAL (x, y) relative to the base station
 VIO `(0,0)` is the takeoff point — the base station. The affine `A` (calibrated by SIFT between
 photos and the mosaic) projects that point into the rectified frame, giving the base station's
 field position. Subtracting it from every target makes all coordinates base-station-relative, as
-the rulebook requires. If `A` is unavailable the code falls back to the yellow corner instead of
+is required. If `A` is unavailable the code falls back to the yellow corner instead of
 producing nonsense.
 
 `HEADING_ROT_DEG` optionally rotates all coordinates so the axes align with an assigned initial

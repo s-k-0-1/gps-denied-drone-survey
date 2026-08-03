@@ -132,7 +132,7 @@ Then compare against `ground_truth.txt` from the generator.
 ```
 ascend_iroc_2026_team_LUMA/
 ├── drone_photos/            ← HD photos + coordinates.csv   (from the Jetson)
-└── targets/                 ← seed images, 64×64            (from the organizers)
+└── targets/                 ← seed images, 64×64            (what to look for)
 ```
 
 Copying from the drone is covered in [03 — Data Transfer](03_DATA_TRANSFER.md).
