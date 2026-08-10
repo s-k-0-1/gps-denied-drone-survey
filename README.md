@@ -80,7 +80,7 @@ Give it the survey photos plus a small reference image of what to look for:
 | 2 | **Field map** | Detect the yellow arena boundary → rectify to a straight, true-scale rectangle | `iroc_pipeline.py` |
 | 3 | **Target matching** | Find each 64×64 seed inside the drone's 128×128 photos (**DINOv2 semantic**) | `stage3_robust.py` |
 | 4 | **Coordinates** | Target pixel → mosaic → rectified → metres, relative to the base station | `iroc_pipeline_fixed.py` |
-| 5 | **3D map** *(optional)* | Photogrammetry → textured 3D model + elevation map | `3d.py` |
+| 5 | **3D map** | Photogrammetry → textured 3D model + elevation map (DSM) + orthophoto | `3d.py` |
 
 ```bash
 python3 iroc_pipeline_fixed.py
@@ -108,7 +108,7 @@ encode *what a thing is*, which survives all of that.
 
 <img src="docs/images/3.png" width="880">
 
-## 3D reconstruction (optional stage 5)
+## 3D reconstruction
 
 The same survey photos also produce a textured 3D model, an elevation map (DSM) and an
 orthophoto — through OpenDroneMap (SfM → MVS → mesh → texture).
@@ -255,7 +255,7 @@ gps-denied-drone-survey/
 ├── iroc_pipeline.py             ← base pipeline: stitching, field map, annotation
 ├── stage3_robust.py             ← target matcher (DINOv2 semantic)
 ├── fused_search.py              ← shared model loading + image helpers
-├── 3d.py                        ← optional 3D reconstruction (OpenDroneMap)
+├── 3d.py                        ← 3D reconstruction (OpenDroneMap)
 ├── make_lr.py                   ← build LR seed images from full-res references
 ├── make_test_dataset.py         ← synthetic dataset generator (for testing)
 │

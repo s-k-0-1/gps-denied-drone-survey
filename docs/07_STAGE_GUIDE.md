@@ -256,7 +256,7 @@ base station.*
 
 ---
 
-## Stage 5 — 3D reconstruction (optional)
+## Stage 5 — 3D reconstruction
 
 **File:** `3d.py` (OpenDroneMap in Docker)
 
