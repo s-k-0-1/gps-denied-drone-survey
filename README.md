@@ -108,10 +108,26 @@ encode *what a thing is*, which survives all of that.
 
 <img src="docs/images/3.png" width="880">
 
-## 3D reconstruction
+## 3D reconstruction — 2D photos → 3D model
 
-The same survey photos also produce a textured 3D model, an elevation map (DSM) and an
-orthophoto — through OpenDroneMap (SfM → MVS → mesh → texture).
+**No LiDAR, no 3D scanner, no depth sensor.** The entire 3D model below is reconstructed from the
+same ordinary **2D photos** the drone already took for the survey — plain RGB images, nothing else.
+
+This is **photogrammetry**: because each point on the ground appears in several overlapping photos
+taken from slightly different positions, its 3D position can be triangulated — the same way two
+eyes give you depth.
+
+```
+~35 overlapping 2D photos
+   → SIFT features + matching        find the same points across photos
+   → SfM (Structure from Motion)     recover where each photo was taken + a sparse 3D cloud
+   → MVS (Multi-View Stereo)         densify it into a full point cloud
+   → meshing + texturing             surface + real colour from the photos
+   → textured 3D model · DSM (elevation) · orthophoto
+```
+
+So one survey flight gives you three different products from the same images: a **2D map** for
+finding objects, a **3D model** of the terrain, and an **elevation map**.
 
 | Top-down | Angled |
 |:---:|:---:|
