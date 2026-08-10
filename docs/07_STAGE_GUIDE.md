@@ -265,6 +265,17 @@ SIFT features → matching → **SfM** (camera poses + sparse cloud) → **MVS**
 texture. Also produces a **DSM** (elevation grid) and an **orthophoto** (true-scale colour map),
 which `3d.py` fuses into a coloured point cloud.
 
+### What a good result looks like
+
+| Top-down | Angled |
+|:---:|:---:|
+| <img src="images/3d_model_top.png" width="400"> | <img src="images/3d_model_angle.png" width="400"> |
+
+<img src="images/3d_model_oblique.png" width="820">
+
+*The whole arena reconstructed — yellow boundary, base station and every feature. Blue outlines
+are mesh edges. The low-angle view shows the elevation the DSM recovers.*
+
 ### Key parameters
 
 | Parameter | File | Default | Change it when |

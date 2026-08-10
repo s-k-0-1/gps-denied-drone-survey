@@ -108,6 +108,31 @@ encode *what a thing is*, which survives all of that.
 
 <img src="docs/images/3.png" width="880">
 
+## 3D reconstruction (optional stage 5)
+
+The same survey photos also produce a textured 3D model, an elevation map (DSM) and an
+orthophoto — through OpenDroneMap (SfM → MVS → mesh → texture).
+
+| Top-down | Angled |
+|:---:|:---:|
+| <img src="docs/images/3d_model_top.png" width="420"> | <img src="docs/images/3d_model_angle.png" width="420"> |
+| The whole arena reconstructed — yellow boundary, base station and every feature | Blue outlines are the mesh edges of the reconstructed objects |
+
+<img src="docs/images/3d_model_oblique.png" width="860">
+
+*Low-angle view — the features stand up from the surface, which is the elevation (DSM) the
+reconstruction recovers.*
+
+```bash
+python3 iroc_pipeline_fixed.py --run-3d      # pipeline + 3D
+python3 3d.py                                # 3D only (needs Docker)
+```
+
+Outputs land in `results/3d_map/`: `model.glb` (opens in Windows 3D Viewer, Blender, MeshLab),
+`orthophoto.tif`, `dsm.tif`, `point_cloud.laz` and a coloured point cloud.
+
+---
+
 ## Results
 
 Validated on real flight data over a 35 × 25 ft arena:
