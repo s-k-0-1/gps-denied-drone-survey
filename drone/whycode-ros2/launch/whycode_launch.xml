@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+  
+  <arg name="params_file" default="default.yaml" description="Path to the YAML parameters file in the config folder" />
+
+  <node pkg="whycode" exec="whycode_node" name="whycode_node" output="screen">
+    <param from="$(find-pkg-share whycode)/config/$(var params_file)" />
+  </node>
+
+</launch>

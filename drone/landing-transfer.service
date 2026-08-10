@@ -1,0 +1,13 @@
+[Unit]
+Description=Auto transfer drone data on landing
+After=network.target
+
+[Service]
+ExecStart=/home/jetson/scripts/start_landing_transfer.sh
+Restart=always
+RestartSec=5
+User=jetson
+Environment="ROS_DOMAIN_ID=0"
+
+[Install]
+WantedBy=multi-user.target

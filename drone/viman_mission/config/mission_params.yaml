@@ -1,0 +1,760 @@
+# Mission tuning — viman_mission
+# These defaults match the previously hard-coded constants exactly.you dont know
+
+auto_mission:
+  ros__parameters:
+    target_alt: 2.0          # hover altitude in metres (ENU +Z)
+    alt_tolerance: 0.12      # ±m band to consider "at altitude"
+    stable_of_secs: 3.0      # hold-still time on optical flow before RTAB-Map
+    cam_good_secs: 5.0       # continuous seconds of good tracking needed
+    cam_timeout_secs: 30.0   # abort to land if VIO not ready in this time
+    hover_duration: 30.0     # hover time on RTAB-Map (seconds)
+    sp_rate_hz: 20.0         # setpoint publish rate (Hz)
+    rc_ch5_index: 4          # channel 5 = index 4 (0-based)
+    rc_start_low: 1200       # CH5 PWM ≤ this → start mission
+    rc_interrupt_high: 1700  # CH5 PWM ≥ this → pilot safety takeover
+    map_dir: "/media/jetson/ROS2_SSD/maps"
+
+vision_bridge:
+  ros__parameters:
+    publish_rate_hz: 30.0
+    # offset_x/y/z are injected at runtime by the launching node —
+    # do not set them here.
+
+rtabmap_trigger:
+  ros__parameters:
+    target_alt: 1.2          # start RTAB-Map early near ground
+    stable_secs: 2.0
+    good_quality_secs: 5.0
+    map_dir: "/media/jetson/ROS2_SSD/maps"
+
+# ════════════════════════════════════════════════════════════════
+#  FINAL ARCHITECTURE (bringup.launch.py): vio_gate + mission_director
+# ════════════════════════════════════════════════════════════════
+
+rs_pipeline:
+  ros__parameters:
+    width: 1280
+    height: 720
+    fps: 30
+    laser_power: 360.0       # IR emitter max — best depth
+    rgb_ae_limit_us: 800.0   # (was 200) — raised after flight showing quality 20-50
+                             # throughout vs 150-250 in previous session; consistent
+                             # with AE hitting 200µs ceiling in dimmer conditions.
+                             # 800µs: ~0.06px blur at 0.4 m/s, 3m alt — negligible.
+    spatial_filter: true
+    hole_filling: false      # NEVER true for VIO flights
+    publish_tf: true
+    reliable_qos: true       # RTAB-Map subscribes RELIABLE by default;
+                             # only set false if rtabmap launched with qos:=2
+    hw_reset_on_start: true  # auto-replug over USB — heals stuck camera
+    start_retries: 3
+    stats_period_s: 10.0
+
+vio_gate:
+  ros__parameters:
+    rtab_odom_topic: "/rtabmap/rtabmap/odom"
+    reset_service: "/rtabmap/reset_odom"  # verify: ros2 service list | grep reset
+    vision_rate_hz: 30.0
+    cov_bad: 100.0           # covariance ≥ this → tracking lost
+    cov_norm: 50.0           # Q-score normalization
+    window_secs: 2.0         # agreement / stability sliding window
+    agree_tol_m: 0.5         # A-score (was 0.3 — flight EKF is noisier
+                             # than a hand test; first flight timed out)
+    vel_tol_ms: 0.5          # S-score (was 0.3 — the motion-test square
+                             # itself creates velocity stddev in flight)
+    divergence_max_m: 9.0    # (was 1.0) — raised high to allow full map completion.
+                             # Tracker is healthy (quality=200+, σ=0.03-0.05m) but drifts
+                             # slowly relative to EKF in low-texture survey terrain.
+                             # 3.0m means gate only closes on genuine tracking failure
+                             # (quality→0, sudden jump) not slow accumulation.
+    jump_max_m: 6.0          # RTAB reset detector (gate auto-close)
+    seed_settle_secs: 0.5    # wait after reset before capturing alignment
+    cov_spike: 0.0225        # pose variance threshold (σ > 0.15m = bad quality frame)
+                             # Raised from 0.01 (σ>0.1m): brief 2-frame quality drops
+                             # to 6-8 during lateral flight caused spurious FAULT_QUALITY
+                             # at Y≈-3m. At σ=0.15m threshold only genuine sustained
+                             # tracking loss triggers a fault.
+    cov_spike_frames: 6      # require 4 consecutive bad frames before closing gate.
+                             # Raised from 2: single-frame quality glitches (glint,
+                             # texture-poor patch) now need to sustain 4 frames (~130ms)
+                             # before triggering. Genuine VIO loss sustains far longer.
+
+mission_director:
+  ros__parameters:
+    target_alt: 3.0          # flow-only takeoff altitude (m)
+    alt_tolerance: 0.12
+    at_alt_confirm_s: 1.5
+    stable_of_secs: 4.0      # flow settle before seeding
+    seed_timeout_s: 10.0
+    validate_if_min: 0.7     # (was 0.8) flight-realistic threshold
+    validate_hold_s: 5.0     # IF must hold this long (with dip grace)
+    validate_dip_grace_s: 1.0  # brief dips tolerated without reset
+    validate_timeout_s: 60.0 # (was 45) more time for first flights
+    motion_test: true        # gentler square during validation:
+    motion_amp_m: 0.2        # (was 0.3)
+    motion_leg_s: 4.0        # (was 3.0) slower legs → calmer S-score
+    handover_settle_s: 2.0
+    hover_duration: 30.0
+    max_revalidations: 2     # vision-fault recovery attempts before landing
+    sp_rate_hz: 20.0
+    rc_ch5_index: 4
+    rc_start_low: 1200
+    rc_interrupt_high: 1700
+    preflight_pose_hz_min: 15.0
+    rtab_odom_topic: "/rtabmap/rtabmap/odom"
+    return_enabled: true     # fly back to launch position before landing
+    return_speed_ms: 0.3     # gentle crawl home on fused VIO
+    return_radius_m: 0.20    # arrival radius, held 1 s before landing
+    return_timeout_s: 20.0   # can't reach home → land where we are
+    land_settle_s: 2.5       # camera off at altitude, EKF settles on
+                             # flow BEFORE descent — landing is 100% flow
+    descend_enabled: true    # OFFBOARD precision descent (X/Y locked)
+    descend_speed_ms: 0.25   # sink rate
+    descend_handoff_alt_m: 0.3  # AUTO.LAND takes the final touchdown
+    descend_timeout_s: 15.0
+
+survey_mission:
+  ros__parameters:
+    # --- flight profile (same tuning as mission_director) ---
+    target_alt: 3.0           # survey altitude (m) — higher = wider FOV per photo
+    alt_tolerance: 0.12
+    at_alt_confirm_s: 1.5
+    stable_of_secs: 4.0
+    seed_timeout_s: 10.0
+    validate_if_min: 0.5      # (was 0.7) — easier post-fault revalidation; stable hover
+                              # gives IF=0.83-0.96 so 0.5 only matters during window fill
+    validate_hold_s: 5.0
+    validate_dip_grace_s: 1.0
+    validate_timeout_s: 60.0
+    motion_test: true
+    motion_amp_m: 0.2
+    motion_leg_s: 4.0
+    handover_settle_s: 2.0
+    goto_radius_m: 0.20       # arrival radius for GOTO_HOME and RETURN
+    goto_timeout_s: 90.0      # 9×9m diagonal ~12.7m @ 0.2 m/s = 63.6s; 90s gives headroom
+    flow_settle_s: 2.5        # gate-off hold before descent
+    descend_speed_ms: 0.25
+    descend_handoff_alt_m: 0.3
+    descend_timeout_s: 15.0
+    max_revalidations: 6      # (was 2) — flight exhausted 2 before cp5; 25-checkpoint
+                              # survey needs headroom for multiple VIO faults
+    sp_rate_hz: 20.0
+    rc_ch5_index: 4
+    rc_start_low: 1200
+    rc_interrupt_high: 1700
+    preflight_pose_hz_min: 15.0
+    rtab_odom_topic: "/rtabmap/rtabmap/odom"
+    # --- survey grid ---
+    survey_width_m: 8.5       # East-West extent of the survey area (m)
+    survey_height_m: 7.5      # North-South extent (m)
+    stripe_spacing_m: 1.7     # (was 1.0) — fewer stripes, shorter flight, less VIO exposure
+    col_spacing_m: 1.5        # (was 1.0) — ~16 total checkpoints instead of ~36
+    waypoint_radius_m: 0.25   # acceptance circle — drone must be within this to capture
+    waypoint_settle_s: 1.0    # hover time at each checkpoint before taking photo (s)
+    survey_speed_ms: 0.3      # (was 0.4) — at 0.4m/s, quality=74-165 terrain gives
+                              # σ=0.035m/pose → random walk hits 0.8m divergence in ~20s.
+                              # 0.2m/s halves frame-to-frame motion (0.013m vs 0.027m),
+                              # improves RANSAC accuracy, extends time between divergences.
+    survey_dir: "/media/jetson/ROS2_SSD/survey"  # output root on SSD
+    yaw_slew_dps: 15.0        # max yaw rotation rate [°/s] — gentle turn toward arm-time heading
+    # --- yaw reference (ACTIVE) — same option as boundary_test_auto ---
+    yaw_use_arm_heading: true  # true = hold the ARM-time heading (default, current
+                               # behavior; set yaw by facing the drone before arming).
+                               # false = slew onto the fixed mission_yaw_deg below.
+    mission_yaw_deg: 0.0       # fixed TARGET heading [deg] in the ENU pose-yaw frame;
+                               # used ONLY when yaw_use_arm_heading is false. 0 = the
+                               # drone yaws until its own reported yaw reads 0°. If the
+                               # QGC/compass should read 0 (North) instead, set 90.
+    # --- HOVER_HOME yaw alignment (ACTIVE) — after slewing onto the target
+    #     heading, wait until the reported yaw is actually there, then RE-LOCK
+    #     the grid frame to the drone's ACTUAL settled yaw (same align-and-relock
+    #     as boundary_test_auto). This makes every survey stripe fly straight
+    #     along the drone's own body axes instead of skewing by the residual
+    #     PX4 yaw error. ---
+    yaw_align_tol_deg: 3.0     # lock the grid yaw once |err| ≤ this [deg]
+    yaw_align_hold_s: 1.0      # hold aligned this long before seeding [s]
+    yaw_align_timeout_s: 25.0  # give up aligning and proceed anyway [s]
+    # --- WhyCode precision landing (stop at search alt, land on the marker) ---
+    marker_land_enabled: true            # true → WhyCode precision landing; false → flow-only
+    markers_topic: "/whycode_node/markers"  # whycode_interfaces/MarkerArray (whycode_node must run)
+    marker_search_alt_m: 2.0             # stop & search for the marker at this altitude [m]
+    marker_detect_frames: 4              # consecutive fresh detections to confirm
+    marker_timeout_s: 2.0                # pose older than this = "lost" (bridges brief misses) [s]
+    marker_alt_gate_m: 1.5               # reject a marker whose camera-depth ≠ altitude by >this [m]
+    marker_outlier_jump_m: 1.0           # reject a lone detection jumping >this in one frame [m]
+    marker_cam_x_sign: 1.0               # flip to -1.0 if centring goes the wrong way in X
+    marker_cam_y_sign: -1.0              # flip to  1.0 if centring goes the wrong way in Y
+    marker_cam_yaw_offset_deg: 270.0     # camera mounting rotation about the optical axis.
+                                         # Derived for body forward=+y, right=+x, downward
+                                         # cam. If MARKER_CENTER DIVERGES (marker_ENU runs
+                                         # away, lat_err grows) the mapping is 180° off →
+                                         # change by 180 (270↔90). If it ORBITS at constant
+                                         # distance, change by 90.
+    marker_center_thr_m: 0.15            # within this radius of the marker = "centred" [m]
+    marker_center_hold_s: 1.0            # hold within centre radius this long before descending [s]
+    marker_center_timeout_s: 20.0        # can't centre in this long → descend anyway [s]
+    marker_search_timeout_s: 15.0        # no marker after this → fall back to flow landing [s]
+    marker_descend_speed_ms: 0.15        # sink rate during the marker descent [m/s]
+    # --- ALL-FOUR-SIDES no-cross standoff clamp (survey_boundary_director) ---
+    # On EVERY survey setpoint the drone is clamped so it can never lead within
+    # keep_dist of ANY yellow line (front/back/left/right) and is eased back to
+    # keep_dist if pushed inside. This is the "maintain 0.5-1.0 m, never cross"
+    # safety net; it runs underneath the normal leg/step turn logic.
+    boundary_keep_dist_m: 0.5            # hard never-cross standoff from any line [m]
+    boundary_keep_band_hi_m: 1.0        # far edge of the "in range" band [m]
+    boundary_veto_deadband_m: 0.15      # buffer/deadband — kills chatter near the band [m]
+    boundary_ease_speed_ms: 0.15        # cap when easing back out of the standoff [m/s]
+    # --- END-line (final-stripe) confidence gate: a side-line reading only ends
+    # the survey if enough yellow is really in view AND it holds for a moment.
+    # Stops a stray-pixel blob from falsely triggering "final stripe" → return. ---
+    boundary_end_min_coverage_pct: 0.5  # need >= this % of the frame yellow [%]
+    boundary_end_confirm_s: 0.6         # side line must hold this long to count [s]
+    # --- FRONT/BACK end approach: decelerate from slow_dist and settle in the
+    # [lo, hi] stop band; confirm the in-band reading so a jumpy near-edge
+    # reading can't end the leg early (reference: corner1_test_auto). ---
+    front_stop_lo_m: 0.5                # never closer than this to the front line [m]
+    front_stop_hi_m: 0.8                # end the FWD leg once front is <= this [m]
+    back_stop_lo_m: 0.5                 # never closer than this to the back line [m]
+    back_stop_hi_m: 0.8                 # end the BCK leg once back is <= this [m]
+    boundary_slow_dist_m: 1.5           # start decelerating toward the end line here [m]
+    boundary_creep_speed_ms: 0.06       # min (creep) approach speed at the band [m/s]
+    boundary_stop_confirm_s: 0.6        # leading line must hold in-band this long [s]
+
+precision_land:
+  ros__parameters:
+    target_alt:          2.5     # takeoff / search / approach altitude (m)
+    alt_tolerance:       0.12
+    at_alt_confirm_s:    1.5
+    approach_speed_ms:   0.3
+    descend_speed_ms:    0.15    # sink rate during centred descent
+    land_handoff_alt_m:  0.3
+    centering_thr_m:     0.15   # board must be within this radius to start descent
+    sp_rate_hz:          20.0
+    rc_ch5_index:        4
+    rc_start_low:        1200
+    rc_interrupt_high:   1700
+    search_yaw_dps:      15.0   # yaw rotation rate during search
+    detect_frames:       5      # consecutive detections needed before locking
+    marker_size_m:       0.0765
+    marker_gap_m:        0.02
+    board_cols:          4
+    board_rows:          4
+    apriltag_dict:       "DICT_APRILTAG_36H11"
+    cam_x_sign:          1.0    # flip to -1.0 if approach goes wrong direction in X
+    cam_y_sign:         -1.0    # flip to  1.0 if approach goes wrong direction in Y
+
+square_mission:
+  ros__parameters:
+    target_alt: 2.0          # square mission flies at 2 m
+    alt_tolerance: 0.12
+    at_alt_confirm_s: 1.5
+    stable_of_secs: 4.0
+    seed_timeout_s: 10.0
+    validate_if_min: 0.7
+    validate_hold_s: 5.0
+    validate_dip_grace_s: 1.0
+    validate_timeout_s: 60.0
+    motion_test: true
+    motion_amp_m: 0.2
+    motion_leg_s: 4.0
+    handover_settle_s: 2.0
+    hover_duration: 10.0     # hold at home before the square
+    square_size_m: 1.0
+    square_speed_ms: 0.3
+    corner_radius_m: 0.15
+    corner_pause_s: 1.0      # settle at each corner
+    goto_radius_m: 0.20
+    goto_timeout_s: 20.0
+    land_settle_s: 2.5
+    descend_speed_ms: 0.25
+    descend_handoff_alt_m: 0.3
+    descend_timeout_s: 15.0
+    max_revalidations: 2
+    sp_rate_hz: 20.0
+    rc_ch5_index: 4
+    rc_start_low: 1200
+    rc_interrupt_high: 1700
+    preflight_pose_hz_min: 15.0
+    rtab_odom_topic: "/rtabmap/rtabmap/odom"
+
+whycode_mission:
+  ros__parameters:
+    # --- flight profile ---
+    target_alt: 2.0              # work altitude over the marker (m)
+    alt_tolerance: 0.12
+    at_alt_confirm_s: 1.5
+    approach_speed_ms: 0.3       # lateral speed for CENTER / BACK
+    forward_speed_ms: 0.3        # speed for the 1 m probe leg
+    descend_speed_ms: 0.15
+    land_handoff_alt_m: 0.3      # AUTO.LAND takes over below this altitude
+    center_thr_m: 0.12           # within this radius of marker = centred
+    leg_radius_m: 0.15           # arrival radius for FORWARD / BACK
+    leg_settle_s: 1.5            # hold at forward point and back at marker
+    sp_rate_hz: 20.0
+    # --- RC ---
+    rc_ch5_index: 4
+    rc_start_low: 1200
+    rc_interrupt_high: 1700
+    # --- detection (whycode node must already be publishing) ---
+    markers_topic: "/whycode_node/markers"  # whycode_interfaces/MarkerArray
+    marker_diameter_m: 0.41         # 41 cm — ALSO set circle_diameter in the whycode node
+    detect_frames: 4                # fresh detections to confirm (freshness bridges gaps)
+    marker_timeout_s: 2.0           # pose older than this = lost (bridges brief misses)
+    alt_gate_m: 1.5                 # reject a marker whose camera-depth differs from the
+                                    # drone altitude by more than this (kills false hits)
+    outlier_jump_m: 1.0             # reject a lone detection that jumps this far in 1 frame
+    # --- geometry / mounting signs (flip after first flight if wrong way) ---
+    cam_x_sign: 1.0
+    cam_y_sign: -1.0
+    forward_dist_m: 1.0             # length of the forward-then-back probe leg
+    # --- yaw alignment to the marker's real WhyCode orientation (rotation.z) ---
+    yaw_align_tol_deg: 8.0          # WhyCode yaw is a bit noisy; 8° is plenty square
+    yaw_align_hold_s: 1.0
+    yaw_slew_dps: 20.0
+    yaw_align_timeout_s: 25.0
+    whycon_yaw_sign: -1.0           # flip if the drone rotates AWAY from aligned
+    whycon_yaw_offset_deg: 0.0      # target heading vs marker rotation.z. Your marker
+                                    # reads rotation.z ~= 180deg when square to the camera,
+                                    # so set this to 180.0 if it parks 180deg off.
+
+whycode_detector:
+  ros__parameters:
+    image_topic: "/camera/camera/color/image_raw"
+    camera_info_topic: "/camera/camera/color/camera_info"
+    output_topic: "/whycode_node/markers"   # what survey_mission/whycode_mission read
+    marker_diameter_m: 0.41                  # 41 cm outer disc
+    dark_max_v: 115                          # gray < this = candidate dark pixel
+                                             # (raise if a grey — not black — disc is missed)
+    min_radius_px: 35                        # marker ~66 px @ 2 m; 35 rejects tiny clutter
+    max_radius_px: 600
+    hough_param1: 120                        # (unused by contour detector; kept for ref)
+    hough_param2: 25                         # (unused by contour detector; kept for ref)
+    min_dark_frac: 0.55                      # disc annulus must be >= this fraction dark
+    min_circularity: 0.45                    # contour area / enclosing-circle area
+                                             # (lower tolerates the cog breaking the ring)
+    min_center_contrast: 4.0                 # centre (bright cog) brighter than ring by >=
+                                             # (lowered for low light; CLAHE also boosts it)
+    clahe_clip: 3.0                          # low-light contrast boost (0=off). Raise to ~5
+                                             # for very dark scenes; lower if noise causes
+                                             # false detections.
+                                             # lowered: motion blur softens the cog edge
+    open_kernel_px: 9                        # MORPH_OPEN size to erase thin cage rails
+                                             # before contouring (0 disables). Raise if
+                                             # thicker rails still merge with the disc.
+    center_bias: 0.6                         # prefer blobs near image centre (marker is
+                                             # ~below the drone); 0 disables, raise to
+                                             # ignore edge clutter more aggressively
+    process_below_alt_m: 3.2                 # ONLY detect when altitude < this. Raised to
+                                             # 3.2 so the multi-altitude marker search runs
+                                             # at 2.0 / 2.5 / 3.0 m. NOTE: this also lets the
+                                             # detector run during the survey (cruise 3 m),
+                                             # costing CPU/fps — lower back to 2.5 if VIO
+                                             # suffers and you don't need the 2.5/3 m search.
+                                             # <=0 = always
+    pose_topic: "/mavros/local_position/pose"
+    proc_scale: 0.5                          # detect at half-res for Jetson speed
+    publish_debug: false                     # true → /whycode_node/image_debug topic
+    debug_save_path: ""                      # headless: e.g. "/tmp/whycode_debug.jpg"
+                                             # writes latest annotated frame for tuning
+    log_period_s: 2.0
+
+# ════════════════════════════════════════════════════════════════
+#  YELLOW BOUNDARY (potential-field repulsion) — detector + tests
+# ════════════════════════════════════════════════════════════════
+
+yellow_boundary_detector:
+  ros__parameters:
+    image_topic: "/camera/camera/color/image_raw"
+    camera_info_topic: "/camera/camera/color/camera_info"
+    pose_topic: "/mavros/local_position/pose"
+    repulsion_topic: "/viman/boundary/repulsion"
+    nearest_topic: "/viman/boundary/nearest_m"
+    coverage_topic: "/viman/boundary/coverage_pct"
+    # --- yellow segmentation: mask only, ANY line width ---
+    hsv_low:  [9, 56, 52]      # H,S,V lower (OpenCV H 0-179). V/S lowered
+    hsv_high: [24, 255, 255]    # (was 65,100) to catch dimmer/less-saturated
+                                # tape at the frame EDGE during the approach —
+                                # RETUNE per arena from the http://<ip>:8080 feed.
+    use_clahe: true             # V-channel normalisation (shadows/glare)
+    min_pixels: 12              # (was 40) yellow px (at proc scale) below this =
+                                # noise. Lowered so the thin leading edge of the
+                                # tape registers from FURTHER away, not only when
+                                # the drone is right over it.
+    open_kernel_px: 0           # (was 3) DISABLED — MORPH_OPEN was eroding the
+                                # thin tape line at range before it hit min_pixels.
+                                # 0 keeps every yellow pixel.
+    # --- LINE-ONLY FILTER (rejects clothing patches, scraps, coloured objects) ---
+    # After the mask is built, only connected components that look like a REAL
+    # arena boundary line are kept. A component must pass ALL five tests below.
+    # Loosen a value if the real boundary line disappears; tighten a value if
+    # noise (patches on clothing, red scraps, etc.) is still getting through.
+    line_filter_enabled: false
+    close_kernel_px: 7          # bridge small gaps ALONG the tape (0=off).
+                                # Small so it won't merge two separate patches.
+    min_component_area_px: 150  # drop components smaller than this (proc-scale
+                                # px). Balanced: kills 80-100 px clothing
+                                # patches while keeping partial-view boundary
+                                # lines with limited area.
+    min_line_length_frac: 0.30  # component's LONGER minAreaRect side must span
+                                # at least this fraction of the frame's larger
+                                # dimension. LOWERED from 0.55 after flight log
+                                # showed the LEFT line was being rejected during
+                                # strafe because it was only partially in view
+                                # (entering from the side of the frame).
+    min_line_length_px: 100     # absolute floor for the above (proc-scale px).
+    max_line_width_px: 40       # strokes THICKER than this are blobs/objects,
+                                # not tape (proc-scale px). Tape at 2-3 m alt
+                                # is ~15-30 proc px wide; 40 leaves margin
+                                # without letting clothing patches (40-80 px
+                                # thick) through.
+    min_aspect_ratio: 3.0       # minAreaRect length/width. A real tape line
+                                # is 15:1 to 30:1 fully in view, ~4-6:1 when
+                                # partially in view from the side. Clothing
+                                # patches are 1:1 to 2.5:1, so 3.0 still
+                                # rejects them.  This is the SINGLE STRONGEST
+                                # discriminator between tape and patches.
+    min_rectangularity: 0.40    # contour area / minAreaRect area. Straight
+                                # tape fills 0.7-0.9 of its bounding rect; a
+                                # partial curved section can drop to ~0.45.
+                                # Irregular clothing blobs are ~0.3, so 0.40
+                                # still rejects them.
+    # --- potential field ---
+    influence_radius_m: 2.0     # pixels farther than this push nothing
+    falloff_power: 2.0          # weight = (1 - r/R)^power — closer = stronger
+    # --- corner detection (L of two tape arms) ---
+    corner_enabled: true
+    corner_min_diff_deg: 40.0   # two tape directions must differ ≥ this
+    corner_min_defect_px: 10    # min inner-corner depth (at proc scale)
+    # --- per-line detection (front + side lines get their own vector) ---
+    max_lines: 2                # split yellow into up to this many distinct
+                                # lines by orientation (front + side at a
+                                # corner). 1 = old single blended behaviour.
+    lines_topic: "/viman/boundary/lines"  # Float32MultiArray:
+                                # [n, (dist, nx, ny, strength) × n], body-FLU,
+                                # normals point AWAY from each line.
+    line_hough_thresh: 40       # HoughLinesP accumulator votes
+    line_min_len_px: 30         # shortest segment kept (proc-scale px)
+    line_max_gap_px: 20         # max gap to join a segment
+    # --- processing ---
+    proc_scale: 0.5             # half-res on the Jetson
+    max_rate_hz: 15.0           # frame-rate cap (VIO shares the CPU)
+    min_alt_m: 0.5              # below this publish "no yellow" (prop wash,
+                                # ground clutter)
+    default_alt_m: 3.0          # metric scale fallback before first pose
+    cam_yaw_offset_deg: 0.0     # FIELD-TUNE: if the red arrow points the
+                                # wrong way, set 90 / 180 / 270
+    # --- live view: RED arrow = push-away, BLUE = nearest yellow ---
+    publish_debug: true         # /viman/boundary/image_debug — view live
+                                # from the laptop with rqt_image_view
+    show_window: false          # OpenCV window — needs a real display
+                                # (monitor / ssh -X); auto-off when headless
+    mjpeg_port: 0              # DISABLED (was 8080). Set back to 8080 to re-
+                                # enable the browser live view at
+                                # http://<jetson-ip>:8080.
+    debug_rate_hz: 10.0         # annotated-frame rate cap (CPU/bandwidth)
+    debug_save_path: ""         # e.g. "/tmp/boundary_debug.jpg"
+    log_period_s: 1.0           # terminal status-table row period
+
+boundary_test_auto:            # AUTONOMOUS L-CORNER mission
+  ros__parameters:
+    # --- flight profile: flow to 2 m (camera init), search at 2 m ---
+    takeoff_alt: 2.0            # flow-only takeoff / camera-init altitude (m)
+    cruise_alt: 2.0             # fused-VIO corner-search and lawnmower altitude
+                                # (mission_luma). Distant tape visibility at 3 m
+                                # is handled by the explicit right/partner
+                                # acquisition gates below, NOT by flying lower.
+    climb_speed_ms: 0.2         # gentle 2 -> 3 m climb (scene-scale change)
+    alt_tolerance: 0.12
+    at_alt_confirm_s: 1.5
+    stable_of_secs: 4.0
+    seed_timeout_s: 10.0
+    validate_if_min: 0.7
+    validate_hold_s: 5.0
+    validate_dip_grace_s: 1.0
+    validate_timeout_s: 60.0
+    motion_test: true
+    motion_amp_m: 0.2
+    motion_leg_s: 4.0
+    handover_settle_s: 2.0
+    # --- yaw: SURVEY method. By default the mission holds the ARM-TIME heading
+    #     (whatever way the drone faces when armed, from the Pixhawk/EKF compass)
+    #     — EXACTLY like survey_mission. "backward" (to the back line) and "left"
+    #     (to the corner) are defined relative to it. Set the yaw by FACING the
+    #     drone that way before arming. (survey_yaw_deg is a different, UNUSED
+    #     param — ignore it.) ---
+    yaw_use_arm_heading: true   # true = hold the ARM-TIME heading (survey style,
+                                # AUTO). Face the drone the direction you want
+                                # "forward" to mean BEFORE arming — the mission
+                                # then anchors its 4 body-axes to that heading
+                                # for the rest of the flight. This is now the
+                                # default (was false).
+                                # false = ignore arm heading and rotate to the
+                                # fixed mission_yaw_deg below instead. << MANUAL
+    mission_yaw_deg: 90.0      # ONLY used when yaw_use_arm_heading is false.
+                                # NOTE: this is the ENU pose-yaw (0=East, 90=North),
+                                # NOT the Pixhawk compass. Conversion:
+                                #   mission_yaw_deg = 90 - (desired compass heading)
+                                # 350 => compass 100. (100 gave compass ~350/N.)
+    yaw_slew_dps: 15.0          # gentle rotation onto the target heading [°/s]
+    yaw_align_tol_deg: 3.0      # tighten before locking _cruise_yaw to the
+                                # drone's ACTUAL settled yaw — motion then flies
+                                # straight along the real body axes
+    yaw_align_hold_s: 1.0       # hold aligned this long before seeding
+    yaw_align_timeout_s: 25.0   # give up aligning, proceed anyway
+    # --- boundary approach (SOFT potential-field braking) ---
+    forward_speed_ms: 0.15      # (was 0.2) forward search speed. SLOWED for more
+                                # reaction time between first detection and the
+                                # standoff — the camera only sees ~1 m ahead.
+    strafe_speed_ms: 0.2        # left-slide speed along the front line
+    corner_speed_ms: 0.15       # settling speed into the corner
+    slow_dist_m: 1.2            # begin easing off as the line enters view, so
+                                # braking starts ~0.7 m before the 0.5 m standoff.
+    stop_dist_m: 0.5            # CORNER hold = this far from EACH line. The
+                                # mission homes onto the detector's corner
+                                # VERTEX and parks it at (0.5, 0.5) in body
+                                # frame → 0.5 m off the front line AND 0.5 m off
+                                # the side line. SOFT standoff — glides to a stop
+                                # this far BEFORE each line, never crosses.
+    push_gain: 0.6              # proportional retreat speed if pushed inside standoff
+    push_speed_max_ms: 0.2      # cap on that retreat speed
+    recover_margin_m: 0.25      # if the drone ends up INSIDE the standoff, ease
+                                # back out to (stop_dist + this) = a clear safe
+                                # distance (0.5 + 0.25 = 0.75 m), not just the
+                                # edge, so it does not immediately re-touch the line
+    recover_settle_s: 1.0       # hold at that safe distance this long before
+                                # resuming (left move / corner). Kills the
+                                # aage-peeche limit cycle right at the line.
+    breach_floor_m: 0.20        # IGNORE line readings closer than this when
+                                # deciding "too close". At cruise alt a thick
+                                # tape band's near edge reads ~0.05-0.20 m while
+                                # the drone is really ~standoff away; recovering
+                                # from that phantom froze the drone (never
+                                # strafed). Hard veto still blocks real crossing.
+    acq_left_lo_m: 0.5          # CORNER BAND low  — never closer than this to a
+                                # line (equals stop_dist, the hard wall).
+    acq_left_hi_m: 1.2          # CORNER BAND high — a line counts as "in range /
+                                # reached" at <= this. Corner 1/2/3/4 are each
+                                # validated only when BOTH meeting lines sit
+                                # inside [0.5, 1.2] m AT THE SAME TIME, held 5 s.
+    ahead_thresh: 0.3           # a line is "front" if moving forward carries
+                                # the drone toward it by >= this (0..1)
+    left_thresh: 0.3            # a line is "left" likewise for body-left
+    corner_gain: 0.8            # band-controller gain (ease speed proportional
+                                # to how far a line sits OUTSIDE the band)
+    veto_deadband_m: 0.15       # wall-hold slack (kills chatter on jumpy tape)
+    corner_tol_m: 0.2           # (legacy) both line distances within this of
+                                # stop_dist — superseded by the corner band
+    corner_hold_s: 2.0          # (legacy alias) the ACTIVE corner hold now
+                                # uses corner1_hold_s (5 s) for ALL 4 corners
+    corner_confirm_s: 1.0       # BOTH lines must read in-band this long
+                                # (candidate settle) before the 5 s CORNER_HOLD
+                                # begins; it does NOT count toward the 5 s
+    corner_perp_dot: 0.5        # |n1·n2| below this = the two lines are
+                                # "perpendicular" (~60-120°) and can meet in a
+                                # corner. Raise toward 0.7 for ~45-135°.
+    line_bridge_s: 1.0          # detector-dropout grace for left/right/end
+                                # reference lines; advancing setpoints FREEZE
+                                # during Corner 2/3/4 reference flicker
+    corner_bridge_s: 2.0        # (legacy) survey-corner flicker bridge
+    acq_left_back_lost_s: 1.5   # ACQ_LEFT: HOLD the strafe if the back line
+                                # disappears longer than this (no blind cruise)
+    reach_confirm_s: 0.5        # confirm a phase transition this long
+    max_forward_m: 6.0          # no end line found in this → return + land
+    max_strafe_m: 6.0           # no left line found in this → return + land
+    line_lost_grace_s: 2.0      # corner arm lost this long → re-strafe
+    # --- LAWNMOWER SURVEY (finds all 4 corners; home = arena centre) ---
+    survey_speed_ms: 0.2        # stripe cruise speed (forward/backward legs)
+    stripe_step_m: 2.0          # right shift between stripes
+    corner_margin_m: 0.35       # (legacy) — corner detection now uses
+                                # corner_side_reach_m below.
+    corner_side_reach_m: 1.5    # at a stripe end (front/back line at standoff),
+                                # if a SIDE line (left or right) is within THIS,
+                                # the two lines meet = a corner. User rule: right
+                                # line within 1.5 m.
+    corner_dedup_m: 1.2         # a new corner must be >= this far from every
+                                # already-counted corner, else it is the SAME one
+                                # (stops the back-left being re-counted on the
+                                # next 1 m-right backward stripe).
+    corner1_hold_s: 5.0         # IN-BAND hold at EVERY corner (1-4): both lines
+                                # inside the 0.5-1.2 m band this long BEFORE the
+                                # corner is declared ("N/4 corner detected").
+    corner_blind_validate_s: 5.0 # CORNER VERTEX BLIND SPOT: right on a corner
+                                 # the tape often vanishes under the drone
+                                 # (detection 0, speed 0). If that follows a
+                                 # confirmed in-band candidate/hold, the corner
+                                 # is validated after this long and the mission
+                                 # PROCEEDS to the after-corner step.
+    corner_hold_max_s: 20.0      # absolute cap on a corner-hold phase —
+                                 # validate + proceed even if jumpy tape keeps
+                                 # resetting the 5 s in-band timer (the drone
+                                 # never sits at a confirmed corner forever).
+    target_corners: 4           # mission ends after this many corners
+    # --- RIGHT-boundary acquisition gate (Corners 3 & 4, mission_luma) ---
+    # At 3 m the right tape can be visible from far away. Detection is NOT
+    # acquisition: only a correctly CLASSIFIED right line whose distance
+    # holds inside [lo, hi] for confirm_s opens the gate and enables the
+    # six-mode Corner 3 approach. Beyond hi it is RIGHT-FAR-IGNORED —
+    # telemetry only; the wall veto / breach recovery still see it. The
+    # 1.8 m value is acquisition-only: Corner 3/4 counting still requires
+    # both meeting lines inside the tighter 0.5-1.2 m band + the 5 s hold.
+    right_gate_lo_m: 0.5        # below this = breach recovery, never a valid
+                                # corner-acquisition sample
+    right_gate_hi_m: 1.8        # acquisition far edge (deliberately wider
+                                # than acq_left_hi_m for 3 m altitude)
+    right_gate_confirm_s: 0.5   # in-window hold before the latch; once
+                                # latched a lone noisy sample can't close it
+    max_stripe_m: 12.0          # a stripe spans the FULL arena depth — abort a
+                                # stripe only if no end line is found in this
+                                # far. MUST be > arena depth (e.g. 7.5 m arena
+                                # → keep 12). Not the 6 m max_forward.
+    max_stripes: 12             # safety cap on stripe count (then return+land)
+    acq_settle_s: 1.0           # settle time when a line/corner is reached
+    # --- survey progress watchdog (finite recovery from a stuck sweep) ---
+    # Active only during genuine SURVEY_STEP / SURVEY_STRIPE /
+    # FOLLOW_RIGHT_END motion commands. Gate confirmation, flicker, HOLD,
+    # corner alignment, breach recovery, detector-stale hold and the
+    # normal approach taper are intentional non-progress states and never
+    # count as a stall. Progress is ACTUAL pose motion along the
+    # remembered direction — detector silence in open space is normal.
+    survey_stall_timeout_s: 10.0     # commanded motion with no progress
+                                     # this long → hold + health check
+    survey_stall_min_progress_m: 0.20  # projected progress that resets the
+                                       # watchdog window
+    survey_stall_max_retries: 3      # bounded recovery cycles without
+                                     # progress before RETURN (progress
+                                     # resets the count)
+    # --- STUCK RECOVERY (after the 10 s stall) — the mission NEVER freezes:
+    #   * yellow line VISIBLE  -> ease the nearest line into the 0.5-1.2 m
+    #     band, then resume the phase (a corner = two lines: band hold +
+    #     wall veto handle both arms, the corner logic then proceeds);
+    #   * NO yellow visible    -> remember the LAST motion (forward stays
+    #     forward, backward stays backward) and CONTINUE it at
+    #     corner_speed_ms until a yellow line comes into view, then band-
+    #     recover and resume;
+    #   * reference-lost HOLDs escalate into the same recovery after
+    #     hold_escalate_s so no HOLD can last forever. Every bound ends in
+    #     RETURN home + land — the drone resumes or completes, never sits.
+    stall_recover_timeout_s: 30.0    # one BAND/DRIVE recovery may run at
+                                     # most this long → RETURN
+    hold_escalate_s: 6.0             # a reference-lost HOLD longer than
+                                     # this starts the stuck recovery
+    # --- corner hover / return / land ---
+    hover_duration: 5.0         # legacy alias for corner1_hold_s (in-band hold)
+    goto_radius_m: 0.20         # arrival radius (home return + hover_home)
+    goto_timeout_s: 180.0     # return can't reach home → land where we are
+    flow_settle_s: 2.5          # camera off, EKF settles on flow before descent
+    descend_speed_ms: 0.25
+    descend_handoff_alt_m: 0.3
+    descend_timeout_s: 15.0
+    # --- VIO-fault recovery (survey-style) ---
+    max_revalidations: 6        # flow-hold + re-seed attempts before landing
+    # --- fail-safe ---
+    boundary_stale_s: 1.0       # detector silent → hold (no blind motion)
+    stale_land_s: 5.0           # detector silent this long → return + land
+    # --- infra ---
+    sp_rate_hz: 20.0
+    rc_ch5_index: 4
+    rc_start_low: 1200
+    rc_interrupt_high: 1700
+    preflight_pose_hz_min: 15.0
+    rtab_odom_topic: "/rtabmap/rtabmap/odom"
+    repulsion_topic: "/viman/boundary/repulsion"
+    nearest_topic: "/viman/boundary/nearest_m"
+    coverage_topic: "/viman/boundary/coverage_pct"
+    lines_topic: "/viman/boundary/lines"   # per-line (front + side) vectors
+
+boundary_guard:
+  ros__parameters:
+    # STICK FILTER — the guard NEVER moves the drone by itself and NEVER
+    # freezes the transmitter. Near the line it seizes OFFBOARD and passes
+    # your sticks straight through as velocity commands; ONLY the
+    # component toward the line is clamped:
+    #     allowed_toward = approach_gain × (nearest − hold_dist)
+    # → slow approach permitted, ZERO at hold_dist (the un-crossable
+    # wall). Sideways / backward / up / down / yaw always work. Centred
+    # sticks = drone brakes and hovers. Corners: both arms clamped by the
+    # potential field, everything else free.
+    govern_dist_m: 1.5          # line inside this + stick toward it → engage
+                                # (line first appears ~1.2 m ahead at 3 m alt,
+                                #  so slowing begins as soon as it's seen)
+    hold_dist_m: 0.5            # the wall: toward-speed tapers to ZERO this
+                                # far BEFORE the line — drone stops ~0.5 m
+                                # behind it (raise for a bigger margin)
+    approach_gain: 0.5          # clamp curve steepness [1/s]
+    approach_vmax_ms: 0.4       # toward-speed cap while engaged
+    engage_cmd_ms: 0.05         # min stick toward-command to engage
+    panic_dist_m: 0.15          # engage instantly below this (even in
+                                # cooldown) — never-cross backstop
+    release_dist_m: 1.6         # line farther than this → POSCTL back
+    release_hold_s: 0.8         # line clear/lost this long → release
+    cooldown_s: 0.5             # pause between engagements
+    offboard_grant_s: 3.0       # max wait for PX4 to grant OFFBOARD after
+                                # engage (was hard-coded 1.5 s → premature
+                                # abort + mode thrash). Velocity priming
+                                # makes the grant near-instant now.
+    max_intervene_s: 0.0        # 0 = no timeout (sticks work throughout,
+                                # staying engaged near the line is safe)
+    # --- manual-control mapping — BENCH-VERIFY BEFORE FIRST FLIGHT ---
+    # Move sticks on the ground and watch the STICK column:
+    #   pitch fwd → x positive, roll right → y negative.
+    #   Wrong direction? flip rc_pitch_sign / rc_roll_sign here.
+    manual_vmax_ms: 1.0         # full XY stick = this speed [m/s]
+    manual_vmax_z_ms: 0.6       # full throttle stick = this climb [m/s]
+    yaw_rate_max_dps: 45.0
+    rc_roll_index: 0            # AETR radio: ch1 roll (0-based index)
+    rc_pitch_index: 1           # ch2 pitch
+    rc_throttle_index: 2        # ch3 throttle
+    rc_yaw_index: 3             # ch4 yaw
+    rc_center_us: 1500
+    rc_halfspan_us: 450
+    rc_deadzone_us: 40          # inside this = stick centred (no creep)
+    rc_roll_sign: 1.0
+    rc_pitch_sign: 1.0          # FLIPPED (was -1.0). Flight log proved this
+                                # radio reads FORWARD as HIGHER PWM: in POSCTL
+                                # the drone approached the front line while the
+                                # guard's STICK x showed negative ("backward"),
+                                # so when engaged it drove the drone BACKWARD on
+                                # a forward push. +1.0 makes forward read
+                                # positive. BENCH-VERIFY: push pitch fwd →
+                                # STICK x MUST read positive.
+    rc_yaw_sign: 1.0
+    rc_stale_s: 0.5             # RC frames older → instant POSCTL release
+    # --- infra ---
+    guard_min_alt_m: 1.0        # never engage below (takeoff/landing)
+    position_mode: "POSCTL"     # mode handed back to the pilot
+    boundary_stale_s: 1.0       # detector older than this = guard blind
+    corner_stale_s: 1.0
+    sp_rate_hz: 20.0
+    rc_ch5_index: 4
+    rc_interrupt_high: 1700     # CH5 HIGH = guard OFF (pilot always wins)
+    repulsion_topic: "/viman/boundary/repulsion"
+    nearest_topic: "/viman/boundary/nearest_m"
+    coverage_topic: "/viman/boundary/coverage_pct"
+    corner_topic: "/viman/boundary/corner"
+    lines_topic: "/viman/boundary/lines"   # per-line clamp: hold off each
+                                           # line independently (corner-safe)
+
+whycon_detector:
+  ros__parameters:
+    image_topic: "/camera/camera/color/image_raw"
+    camera_info_topic: "/camera/camera/color/camera_info"
+    output_topic: "/whycon/poses"
+    marker_diameter_m: 0.41         # 41 cm outer disc
+    dark_max_v: 90                  # gray < this = candidate dark (disc) pixel;
+                                    # raise if the disc is missed, lower on dark sand
+    min_radius_px: 18               # smallest disc radius (px); marker ~66px @2m
+    max_radius_px: 600              # largest (close-up fills the frame)
+    hough_param1: 120               # Canny high threshold for circle edges
+    hough_param2: 25                # accumulator: LOWER = more/looser circles
+    min_dark_frac: 0.40             # disc ring must be >=40% dark
+    min_center_contrast: 25.0       # centre must be >=this much BRIGHTER than the ring
+                                    # (white WhyCon centre) — rejects solid dark blobs.
+                                    # Lower if the real marker is missed; raise if clutter
+                                    # still slips through.
+    proc_scale: 0.5                 # detect at half-res for speed on the Jetson
+    publish_yaw: true               # cross-line heading (squares to pad, mod 90°)
+    publish_debug: false            # set true to publish /whycon/image_debug topic
+    debug_save_path: ""             # headless tuning: set e.g. "/tmp/whycon_debug.jpg"
+                                    # to write the latest annotated frame to disk
+    log_period_s: 2.0

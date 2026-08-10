@@ -1,0 +1,10 @@
+/**/distance_sensor:
+  ros__parameters:
+    config: |
+      rangefinder_down:
+        id: 0
+        frame_id: "lidar_link"
+        orientation: PITCH_270
+        field_of_view: 0.1
+        send_tf: false
+        sensor_position: {x: 0.0, y: 0.0, z: -0.1}

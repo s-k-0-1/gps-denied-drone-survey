@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>viman_mission</name>
+  <version>1.0.0</version>
+  <description>
+    Autonomous RTAB-Map VIO mission stack — Viman Rakshak / IRoC-U 2026.
+    Nodes: auto_mission (OFFBOARD state machine), vision_bridge
+    (RTAB-Map odom → MAVROS vision pose), rtabmap_trigger (standalone
+    altitude-triggered RTAB-Map launcher).
+  </description>
+  <maintainer email="shiviansh0@gmail.com">Shiviansh</maintainer>
+  <license>MIT</license>
+
+  <depend>rclpy</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>mavros_msgs</depend>
+  <depend>whycode_interfaces</depend>
+  <exec_depend>rtabmap_launch</exec_depend>
+  <exec_depend>ros2launch</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

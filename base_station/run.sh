@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Launch the IRoC-U Base Station dashboard (run from anywhere).
+# Launch the ASCEND Base Station dashboard (run from anywhere).
 set -e
 cd "$(dirname "$0")/.."          # → ~/advanced_matcher (pipeline root)
 
@@ -12,7 +12,7 @@ cd "$(dirname "$0")/.."          # → ~/advanced_matcher (pipeline root)
 
 PORT="${BASE_STATION_PORT:-8000}"
 echo "──────────────────────────────────────────────────────────"
-echo "  Team LUMA · ASCEND Base Station  →  http://localhost:${PORT}"
+echo "  ASCEND Base Station  →  http://localhost:${PORT}"
 echo "  Link mode: ${DRONE_LINK_MODE:-simulator}   (sim fallback always on)"
 echo "──────────────────────────────────────────────────────────"
 

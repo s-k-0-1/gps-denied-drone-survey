@@ -1,2 +1,2 @@
-"""IRoC-U 2026 Base Station desktop dashboard."""
+"""ASCEND Base Station — desktop dashboard for the drone survey pipeline."""
 __version__ = "1.0.0"

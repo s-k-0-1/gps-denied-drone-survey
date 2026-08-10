@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 620" width="980" height="620" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <rect width="980" height="620" fill="#ffffff"/>
+
+  <text x="490" y="32" text-anchor="middle" font-size="18" font-weight="700" fill="#12324a">How RTAB-Map builds the map — and why loop closure matters</text>
+
+  <!-- ── LEFT: without loop closure ── -->
+  <text x="235" y="70" text-anchor="middle" font-size="13" font-weight="700" fill="#a33">Odometry only — drift accumulates</text>
+
+  <rect x="40" y="84" width="390" height="228" rx="8" fill="#fdf3f3" stroke="#e0b4b4"/>
+
+  <!-- true path (dashed) -->
+  <path d="M80,270 L80,120 L160,120 L160,270 L240,270 L240,120 L320,120 L320,270"
+        fill="none" stroke="#9aa5b4" stroke-width="2" stroke-dasharray="5 4"/>
+  <!-- drifted path -->
+  <path d="M80,270 L82,120 L165,123 L170,272 L256,276 L266,128 L354,134 L370,286"
+        fill="none" stroke="#e5484d" stroke-width="2.6"/>
+  <circle cx="80" cy="270" r="6" fill="#0ea371"/>
+  <text x="80" y="292" text-anchor="middle" font-size="10.5" fill="#22384c">start</text>
+  <circle cx="370" cy="286" r="6" fill="#e5484d"/>
+  <text x="372" y="306" text-anchor="middle" font-size="10.5" fill="#a33">ends ~2 m off</text>
+
+  <text x="235" y="330" text-anchor="middle" font-size="11" fill="#5d6878">grey dashed = true path · red = estimated path</text>
+
+  <!-- ── RIGHT: with loop closure ── -->
+  <text x="745" y="70" text-anchor="middle" font-size="13" font-weight="700" fill="#0b6b4a">With loop closure — drift corrected</text>
+
+  <rect x="550" y="84" width="390" height="228" rx="8" fill="#f0faf6" stroke="#a9dcc8"/>
+
+  <path d="M590,270 L590,120 L670,120 L670,270 L750,270 L750,120 L830,120 L830,270"
+        fill="none" stroke="#9aa5b4" stroke-width="2" stroke-dasharray="5 4"/>
+  <path d="M590,270 L591,120 L671,121 L672,270 L751,271 L752,121 L831,122 L832,270"
+        fill="none" stroke="#0ea371" stroke-width="2.6"/>
+
+  <!-- loop closure links between stripes -->
+  <line x1="591" y1="170" x2="670" y2="170" stroke="#7c5cff" stroke-width="1.8" stroke-dasharray="4 3"/>
+  <line x1="671" y1="220" x2="751" y2="220" stroke="#7c5cff" stroke-width="1.8" stroke-dasharray="4 3"/>
+  <line x1="752" y1="160" x2="831" y2="160" stroke="#7c5cff" stroke-width="1.8" stroke-dasharray="4 3"/>
+  <circle cx="630" cy="170" r="4" fill="#7c5cff"/>
+  <circle cx="711" cy="220" r="4" fill="#7c5cff"/>
+  <circle cx="791" cy="160" r="4" fill="#7c5cff"/>
+
+  <circle cx="590" cy="270" r="6" fill="#0ea371"/>
+  <circle cx="832" cy="270" r="6" fill="#0ea371"/>
+
+  <text x="745" y="330" text-anchor="middle" font-size="11" fill="#5d6878">purple = loop closures found between adjacent stripes</text>
+
+  <!-- ── HOW IT WORKS ── -->
+  <text x="40" y="378" font-size="14" font-weight="700" fill="#12324a">How a loop closure is found</text>
+
+  <rect x="40" y="392" width="205" height="96" rx="8" fill="#ffffff" stroke="#2b7fff" stroke-width="1.3"/>
+  <text x="56" y="414" font-size="12" font-weight="700" fill="#14538f">1 · Every frame → node</text>
+  <text x="56" y="434" font-size="10.5" fill="#22384c">A node is added after 5 cm</text>
+  <text x="56" y="450" font-size="10.5" fill="#22384c">of motion or ~3° of rotation</text>
+  <text x="56" y="472" font-size="10" font-style="italic" fill="#5d6878">RGBD/LinearUpdate 0.05</text>
+
+  <rect x="265" y="392" width="205" height="96" rx="8" fill="#ffffff" stroke="#2b7fff" stroke-width="1.3"/>
+  <text x="281" y="414" font-size="12" font-weight="700" fill="#14538f">2 · Visual signature</text>
+  <text x="281" y="434" font-size="10.5" fill="#22384c">Each node stores up to 500</text>
+  <text x="281" y="450" font-size="10.5" fill="#22384c">visual words (bag of features)</text>
+  <text x="281" y="472" font-size="10" font-style="italic" fill="#5d6878">Kp/MaxFeatures 500</text>
+
+  <rect x="490" y="392" width="205" height="96" rx="8" fill="#ffffff" stroke="#7c5cff" stroke-width="1.5"/>
+  <text x="506" y="414" font-size="12" font-weight="700" fill="#5b3fd6">3 · Match against memory</text>
+  <text x="506" y="434" font-size="10.5" fill="#22384c">Checked ~1×/second against</text>
+  <text x="506" y="450" font-size="10.5" fill="#22384c">nearby past nodes</text>
+  <text x="506" y="472" font-size="10" font-style="italic" fill="#5d6878">Rtabmap/DetectionRate 1.0</text>
+
+  <rect x="715" y="392" width="225" height="96" rx="8" fill="#ffffff" stroke="#0ea371" stroke-width="1.5"/>
+  <text x="731" y="414" font-size="12" font-weight="700" fill="#0b6b4a">4 · Optimize the graph</text>
+  <text x="731" y="434" font-size="10.5" fill="#22384c">A confirmed match adds an edge;</text>
+  <text x="731" y="450" font-size="10.5" fill="#22384c">the whole graph is re-solved</text>
+  <text x="731" y="472" font-size="10" font-style="italic" fill="#5d6878">RGBD/OptimizeMaxError 5.0</text>
+
+  <line x1="245" y1="440" x2="261" y2="440" stroke="#5d6878" stroke-width="1.6" marker-end="url(#ar)"/>
+  <line x1="470" y1="440" x2="486" y2="440" stroke="#5d6878" stroke-width="1.6" marker-end="url(#ar)"/>
+  <line x1="695" y1="440" x2="711" y2="440" stroke="#5d6878" stroke-width="1.6" marker-end="url(#ar)"/>
+
+  <!-- ── WHY SURVEY TUNING ── -->
+  <rect x="40" y="506" width="900" height="88" rx="8" fill="#f7f9fc" stroke="#d8dee8"/>
+  <text x="56" y="528" font-size="12.5" font-weight="700" fill="#12324a">Why this needed tuning for a lawnmower survey</text>
+  <text x="56" y="549" font-size="11" fill="#22384c">Survey stripes are 1.5 m apart, so a closure must be found <tspan font-weight="700">across</tspan> to the neighbouring stripe — not just along the current one.</text>
+  <text x="56" y="568" font-size="11" fill="#22384c">At 0.25 m/s with DetectionRate 0.5 Hz only one check happened every 0.5 m and those closures were missed → drift accumulated.</text>
+  <text x="56" y="587" font-size="11" fill="#22384c">Fix: <tspan font-family="JetBrains Mono, Consolas, monospace">DetectionRate 1.0</tspan> (a check every 0.25 m) · <tspan font-family="JetBrains Mono, Consolas, monospace">ProximityPathMaxNeighbors 40</tspan> (search wider) · <tspan font-family="JetBrains Mono, Consolas, monospace">OptimizeMaxError 5.0</tspan> (accept them).</text>
+
+  <defs>
+    <marker id="ar" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#5d6878"/>
+    </marker>
+  </defs>
+</svg>

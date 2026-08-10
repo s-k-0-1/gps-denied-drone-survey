@@ -1,0 +1,14 @@
+/**:
+  ros__parameters:
+    plugin_denylist:
+      # extras we don't need
+      - image_pub
+      - vibration
+      - wheel_odometry
+      - fake_gps          # using vision_pose directly, not fake_gps
+
+    # NOTE: distance_sensor and rangefinder REMOVED from denylist
+    # they were being blocked, which is why the distance sensor never worked
+
+    # plugin_allowlist:
+    #   - 'sys_*'

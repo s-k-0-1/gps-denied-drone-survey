@@ -38,6 +38,9 @@ station.
 | 5 | **3D map** *(optional)* | Photogrammetry → textured 3D model + elevation map | `3d.py` |
 
 Plus:
+- **On-drone autonomy** (`drone/`) — ROS 2 stack on the Jetson: optical-flow takeoff, **gated
+  handover to RTAB-Map visual odometry**, autonomous lawnmower survey, yellow-boundary safety,
+  marker precision landing.
 - **Live dashboard** (`base_station/`) — telemetry, camera feed, arena map, targets, logs, pipeline control.
 - **Docking + charging** (`esp32_firmware/`) — ESP32 drives the docking rods, detects contact
   and polarity, measures pack voltage, and runs the charger.
@@ -118,6 +121,11 @@ Read these in order — they are written for someone who has never seen this pro
 | **[06 — Git & GitHub](docs/06_GIT_GITHUB.md)** | Complete beginner's guide: install git, create the repo, push, update, clone |
 | **[07 — Stage Guide](docs/07_STAGE_GUIDE.md)** | Practical per-stage reference: what runs, which file, the few parameters that matter, how to fix each stage |
 | **[08 — Troubleshooting](docs/08_TROUBLESHOOTING.md)** | Every known symptom → fix, in one lookup table (install, stitching, matching, dashboard, MAVLink, ESP32, git) |
+| **[09 — Drone Software](docs/09_DRONE_SOFTWARE.md)** | The ROS 2 stack on the Jetson: architecture, every node, the autonomous missions, yellow-boundary safety, data transfer |
+| **[10 — VIO & Localization](docs/10_VIO_LOCALIZATION.md)** | How optical flow and RTAB-Map visual odometry are fused, the gated handover, and what happens when the camera fails |
+| **[11 — Pixhawk & PX4](docs/11_PIXHAWK_PX4.md)** | Flight-controller wiring, MAVROS interface, the PX4 parameters for GPS-denied flight, tuning order |
+| **[12 — End-to-End Automation](docs/12_END_TO_END_AUTOMATION.md)** | What happens automatically after touchdown: docking, data transfer, and the pipeline starting itself |
+| **[13 — Operations Runbook](docs/13_OPERATIONS.md)** | Every command: new-Jetson setup, flight-day sequence, mission variants, calibration, build/deploy, checklists |
 | [How It Works](HOW_IT_WORKS.md) | Full explanation of every stage and algorithm, plus the design decisions behind them |
 | [Parameters Guide](PARAMETERS_GUIDE.md) | Every tunable parameter, when to change it and why |
 | [Run Guide](RUN_GUIDE.md) | Run + validation checklist |
@@ -144,6 +152,13 @@ gps-denied-drone-survey/
 │   ├── results_store.py       ← reads results/, auto-refresh watcher
 │   ├── drone_link/            ← MAVLink link + simulator (hot-swappable)
 │   └── static/                ← dashboard UI (HTML/CSS/JS)
+│
+├── drone/                     ← ON-DRONE software (Jetson, ROS 2)
+│   ├── viman_mission/         ← ROS 2 package: missions, VIO gate, perception
+│   │   ├── viman_mission/     ← nodes (mission_director, survey_mission, vio_gate, …)
+│   │   ├── launch/            ← bringup.launch.py and mission launches
+│   │   └── config/            ← mission_params.yaml (all tuning)
+│   └── px4_params.params      ← exported PX4 parameters (EKF2, failsafe, PIDs)
 │
 ├── esp32_firmware/            ← docking + charging firmware (Arduino)
 │   └── full_base_station_wifi.ino

@@ -88,3 +88,7 @@ archive/
 # Competition-specific paperwork (kept locally, not part of the public project)
 DECLARATIONS_11.6.md
 ASCEND_Documentation.html
+
+# Raw copies pulled from the Jetson — organised versions live in drone/
+data/
+jetson_code/

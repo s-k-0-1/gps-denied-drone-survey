@@ -1,5 +1,5 @@
 """
-config.py — Central configuration & path resolution for the IRoC-U 2026
+config.py — Central configuration & path resolution for the ASCEND
 Base Station desktop dashboard.
 
 All paths are derived from BASE_DIR, which defaults to the parent of this

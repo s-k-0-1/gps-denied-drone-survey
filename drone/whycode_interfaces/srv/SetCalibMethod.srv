@@ -1,0 +1,6 @@
+uint8 AUTO=0
+uint8 MANUAL=1
+uint8 method
+---
+bool success
+string msg

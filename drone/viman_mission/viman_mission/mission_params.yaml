@@ -1,0 +1,274 @@
+# Mission tuning — viman_mission
+# These defaults match the previously hard-coded constants exactly.
+
+auto_mission:
+  ros__parameters:
+    target_alt: 2.0          # hover altitude in metres (ENU +Z)
+    alt_tolerance: 0.12      # ±m band to consider "at altitude"
+    stable_of_secs: 3.0      # hold-still time on optical flow before RTAB-Map
+    cam_good_secs: 5.0       # continuous seconds of good tracking needed
+    cam_timeout_secs: 30.0   # abort to land if VIO not ready in this time
+    hover_duration: 30.0     # hover time on RTAB-Map (seconds)
+    sp_rate_hz: 20.0         # setpoint publish rate (Hz)
+    rc_ch5_index: 4          # channel 5 = index 4 (0-based)
+    rc_start_low: 1200       # CH5 PWM ≤ this → start mission
+    rc_interrupt_high: 1700  # CH5 PWM ≥ this → pilot safety takeover
+    map_dir: "/media/jetson/ROS2_SSD/maps"
+
+vision_bridge:
+  ros__parameters:
+    publish_rate_hz: 30.0
+    # offset_x/y/z are injected at runtime by the launching node —
+    # do not set them here.
+
+rtabmap_trigger:
+  ros__parameters:
+    target_alt: 1.2          # start RTAB-Map early near ground
+    stable_secs: 2.0
+    good_quality_secs: 5.0
+    map_dir: "/media/jetson/ROS2_SSD/maps"
+
+# ════════════════════════════════════════════════════════════════
+#  FINAL ARCHITECTURE (bringup.launch.py): vio_gate + mission_director
+# ════════════════════════════════════════════════════════════════
+
+rs_pipeline:
+  ros__parameters:
+    width: 1280
+    height: 720
+    fps: 30
+    laser_power: 360.0       # IR emitter max — best depth
+    rgb_ae_limit_us: 800.0   # (was 200) — raised after flight showing quality 20-50
+                             # throughout vs 150-250 in previous session; consistent
+                             # with AE hitting 200µs ceiling in dimmer conditions.
+                             # 800µs: ~0.06px blur at 0.4 m/s, 3m alt — negligible.
+    spatial_filter: true
+    hole_filling: false      # NEVER true for VIO flights
+    publish_tf: true
+    reliable_qos: true       # RTAB-Map subscribes RELIABLE by default;
+                             # only set false if rtabmap launched with qos:=2
+    hw_reset_on_start: true  # auto-replug over USB — heals stuck camera
+    start_retries: 3
+    stats_period_s: 10.0
+
+vio_gate:
+  ros__parameters:
+    rtab_odom_topic: "/rtabmap/rtabmap/odom"
+    reset_service: "/rtabmap/reset_odom"  # verify: ros2 service list | grep reset
+    vision_rate_hz: 30.0
+    cov_bad: 100.0           # covariance ≥ this → tracking lost
+    cov_norm: 50.0           # Q-score normalization
+    window_secs: 2.0         # agreement / stability sliding window
+    agree_tol_m: 0.5         # A-score (was 0.3 — flight EKF is noisier
+                             # than a hand test; first flight timed out)
+    vel_tol_ms: 0.5          # S-score (was 0.3 — the motion-test square
+                             # itself creates velocity stddev in flight)
+    divergence_max_m: 3.0    # (was 1.0) — raised high to allow full map completion.
+                             # Tracker is healthy (quality=200+, σ=0.03-0.05m) but drifts
+                             # slowly relative to EKF in low-texture survey terrain.
+                             # 3.0m means gate only closes on genuine tracking failure
+                             # (quality→0, sudden jump) not slow accumulation.
+    jump_max_m: 2.0          # RTAB reset detector (gate auto-close)
+                             # (was 1.0) — raised after flight: loop closure at cp6
+                             # corrected 1.26 m of accumulated drift; that's a valid
+                             # correction, not a reset. 2.0 m still catches genuine
+                             # tracking failures (quality→0, sudden large jumps).
+    seed_settle_secs: 0.5    # wait after reset before capturing alignment
+    cov_spike: 0.0225        # pose variance threshold (σ > 0.15m = bad quality frame)
+                             # Raised from 0.01 (σ>0.1m): brief 2-frame quality drops
+                             # to 6-8 during lateral flight caused spurious FAULT_QUALITY
+                             # at Y≈-3m. At σ=0.15m threshold only genuine sustained
+                             # tracking loss triggers a fault.
+    cov_spike_frames: 4      # require 4 consecutive bad frames before closing gate.
+                             # Raised from 2: single-frame quality glitches (glint,
+                             # texture-poor patch) now need to sustain 4 frames (~130ms)
+                             # before triggering. Genuine VIO loss sustains far longer.
+
+mission_director:
+  ros__parameters:
+    target_alt: 3.0          # flow-only takeoff altitude (m)
+    alt_tolerance: 0.12
+    at_alt_confirm_s: 1.5
+    stable_of_secs: 4.0      # flow settle before seeding
+    seed_timeout_s: 10.0
+    validate_if_min: 0.51    # (was 0.8) flight-realistic threshold
+    validate_hold_s: 5.0     # IF must hold this long (with dip grace)
+    validate_dip_grace_s: 1.0  # brief dips tolerated without reset
+    validate_timeout_s: 60.0 # (was 45) more time for first flights
+    motion_test: true        # gentler square during validation:
+    motion_amp_m: 0.2        # (was 0.3)
+    motion_leg_s: 4.0        # (was 3.0) slower legs → calmer S-score
+    handover_settle_s: 2.0
+    hover_duration: 30.0
+    max_revalidations: 2     # vision-fault recovery attempts before landing
+    sp_rate_hz: 20.0
+    rc_ch5_index: 4
+    rc_start_low: 1200
+    rc_interrupt_high: 1700
+    preflight_pose_hz_min: 15.0
+    rtab_odom_topic: "/rtabmap/rtabmap/odom"
+    return_enabled: true     # fly back to launch position before landing
+    return_speed_ms: 0.3     # gentle crawl home on fused VIO
+    return_radius_m: 0.20    # arrival radius, held 1 s before landing
+    return_timeout_s: 20.0   # can't reach home → land where we are
+    land_settle_s: 2.5       # camera off at altitude, EKF settles on
+                             # flow BEFORE descent — landing is 100% flow
+    descend_enabled: true    # OFFBOARD precision descent (X/Y locked)
+    descend_speed_ms: 0.25   # sink rate
+    descend_handoff_alt_m: 0.3  # AUTO.LAND takes the final touchdown
+    descend_timeout_s: 15.0
+
+survey_mission:
+  ros__parameters:
+    # --- flight profile (same tuning as mission_director) ---
+    target_alt: 3.0           # survey altitude (m) — higher = wider FOV per photo
+    alt_tolerance: 0.12
+    at_alt_confirm_s: 1.5
+    stable_of_secs: 4.0
+    seed_timeout_s: 10.0
+    validate_if_min: 0.5      # (was 0.7) — easier post-fault revalidation; stable hover
+                              # gives IF=0.83-0.96 so 0.5 only matters during window fill
+    validate_hold_s: 5.0
+    validate_dip_grace_s: 1.0
+    validate_timeout_s: 60.0
+    motion_test: true
+    motion_amp_m: 0.2
+    motion_leg_s: 4.0
+    handover_settle_s: 2.0
+    goto_radius_m: 0.20       # arrival radius for GOTO_HOME and RETURN
+    goto_timeout_s: 90.0      # 9×9m diagonal ~12.7m @ 0.2 m/s = 63.6s; 90s gives headroom
+    flow_settle_s: 2.5        # gate-off hold before descent
+    descend_speed_ms: 0.25
+    descend_handoff_alt_m: 0.3
+    descend_timeout_s: 15.0
+    max_revalidations: 4      # (was 2) — flight exhausted 2 before cp5; 25-checkpoint
+                              # survey needs headroom for multiple VIO faults
+    sp_rate_hz: 20.0
+    rc_ch5_index: 4
+    rc_start_low: 1200
+    rc_interrupt_high: 1700
+    preflight_pose_hz_min: 15.0
+    rtab_odom_topic: "/rtabmap/rtabmap/odom"
+    # --- survey grid ---
+    survey_width_m: 6.0       # East-West extent of the survey area (m)
+    survey_height_m: 6.0      # North-South extent (m)
+    stripe_spacing_m: 1.5     # (was 1.0) — fewer stripes, shorter flight, less VIO exposure
+    col_spacing_m: 1.5        # (was 1.0) — ~16 total checkpoints instead of ~36
+    waypoint_radius_m: 0.25   # acceptance circle — drone must be within this to capture
+    waypoint_settle_s: 1.0    # hover time at each checkpoint before taking photo (s)
+    survey_speed_ms: 0.2      # (was 0.4) — at 0.4m/s, quality=74-165 terrain gives
+                              # σ=0.035m/pose → random walk hits 0.8m divergence in ~20s.
+                              # 0.2m/s halves frame-to-frame motion (0.013m vs 0.027m),
+                              # improves RANSAC accuracy, extends time between divergences.
+    survey_dir: "/media/jetson/ROS2_SSD/survey"  # output root on SSD
+    yaw_slew_dps: 15.0        # max yaw rotation rate [°/s] — gentle turn toward arm-time heading
+
+corner_survey_mission:
+  ros__parameters:
+    # --- flight profile (same tuning as survey_mission) ---
+    target_alt: 3.0
+    alt_tolerance: 0.12
+    at_alt_confirm_s: 1.5
+    stable_of_secs: 4.0
+    seed_timeout_s: 10.0
+    validate_if_min: 0.5
+    validate_hold_s: 5.0
+    validate_dip_grace_s: 1.0
+    validate_timeout_s: 60.0
+    motion_test: true
+    motion_amp_m: 0.2
+    motion_leg_s: 4.0
+    handover_settle_s: 2.0
+    goto_radius_m: 0.20
+    goto_timeout_s: 90.0
+    flow_settle_s: 2.5
+    descend_speed_ms: 0.25
+    descend_handoff_alt_m: 0.3
+    descend_timeout_s: 15.0
+    max_revalidations: 4
+    sp_rate_hz: 20.0
+    rc_ch5_index: 4
+    rc_start_low: 1200
+    rc_interrupt_high: 1700
+    preflight_pose_hz_min: 15.0
+    rtab_odom_topic: "/rtabmap/rtabmap/odom"
+    yaw_slew_dps: 15.0
+    # --- survey grid ---
+    survey_width_m: 7.5        # 25 ft ≈ 7.62 m → round(7.5/1.5)+1 = 6 cols
+    survey_height_m: 9.0       # 30 ft ≈ 9.14 m → round(9.0/1.5)+1 = 7 rows  →  7×6=42 wpts
+    stripe_spacing_m: 1.5
+    col_spacing_m: 1.5
+    waypoint_radius_m: 0.25
+    waypoint_settle_s: 1.0
+    survey_speed_ms: 0.2
+    survey_dir: "/media/jetson/ROS2_SSD/survey"
+    # --- corner finding (forward approach to the back wall) ---
+    find_corner_speed_ms: 0.08   # (was 0.15) slower = less overshoot at the wall
+    find_corner_max_m: 3.0       # (was 5.0) max forward travel before abort-to-LAND;
+                                 # the drone must start within this distance of the wall
+    # --- tape boundary ---
+    tape_stop_dist_m: 0.45       # stop/hold when tape detected this close ahead
+    # --- yaw alignment (ALIGN_YAW phase) ---
+    yaw_align_tol_deg: 5.0       # heading/tape error below this = aligned
+    yaw_align_hold_s: 3.0        # collect samples for this many seconds in MEASURE phase
+    yaw_align_timeout_s: 40.0    # give up and launch survey if overall phase exceeds this
+    yaw_align_dir: 1.0           # SIGN of the ALIGN_YAW correction (now active in code).
+                                 # Set -1.0 if the drone rotates AWAY from the tape on the
+                                 # first flight (detector convention suggests this may be needed).
+
+precision_land:
+  ros__parameters:
+    target_alt:          2.5     # takeoff / search / approach altitude (m)
+    alt_tolerance:       0.12
+    at_alt_confirm_s:    1.5
+    approach_speed_ms:   0.3
+    descend_speed_ms:    0.15    # sink rate during centred descent
+    land_handoff_alt_m:  0.3
+    centering_thr_m:     0.15   # board must be within this radius to start descent
+    sp_rate_hz:          20.0
+    rc_ch5_index:        4
+    rc_start_low:        1200
+    rc_interrupt_high:   1700
+    search_yaw_dps:      15.0   # yaw rotation rate during search
+    detect_frames:       5      # consecutive detections needed before locking
+    marker_size_m:       0.0765
+    marker_gap_m:        0.02
+    board_cols:          4
+    board_rows:          4
+    apriltag_dict:       "DICT_APRILTAG_36H11"
+    cam_x_sign:          1.0    # flip to -1.0 if approach goes wrong direction in X
+    cam_y_sign:         -1.0    # flip to  1.0 if approach goes wrong direction in Y
+
+square_mission:
+  ros__parameters:
+    target_alt: 2.0          # square mission flies at 2 m
+    alt_tolerance: 0.12
+    at_alt_confirm_s: 1.5
+    stable_of_secs: 4.0
+    seed_timeout_s: 10.0
+    validate_if_min: 0.7
+    validate_hold_s: 5.0
+    validate_dip_grace_s: 1.0
+    validate_timeout_s: 60.0
+    motion_test: true
+    motion_amp_m: 0.2
+    motion_leg_s: 4.0
+    handover_settle_s: 2.0
+    hover_duration: 10.0     # hold at home before the square
+    square_size_m: 1.0
+    square_speed_ms: 0.3
+    corner_radius_m: 0.15
+    corner_pause_s: 1.0      # settle at each corner
+    goto_radius_m: 0.20
+    goto_timeout_s: 20.0
+    land_settle_s: 2.5
+    descend_speed_ms: 0.25
+    descend_handoff_alt_m: 0.3
+    descend_timeout_s: 15.0
+    max_revalidations: 2
+    sp_rate_hz: 20.0
+    rc_ch5_index: 4
+    rc_start_low: 1200
+    rc_interrupt_high: 1700
+    preflight_pose_hz_min: 15.0
+    rtab_odom_topic: "/rtabmap/rtabmap/odom"

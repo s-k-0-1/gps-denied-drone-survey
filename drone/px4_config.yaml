@@ -1,0 +1,200 @@
+# Common configuration for PX4 autopilot
+#
+/**:
+  ros__parameters:
+    startup_px4_usb_quirk: false
+
+# --- system plugins ---
+
+# sys_status
+/**/sys:
+  ros__parameters:
+    min_voltage: [10.0]
+    disable_diag: false
+    heartbeat_rate: 1.0
+    conn_timeout: 10.0
+
+# sys_time
+/**/time:
+  ros__parameters:
+    time_ref_source: "fcu"
+    timesync_mode: MAVLINK
+    timesync_avg_alpha: 0.6
+    timesync_rate: 10.0
+    system_time_rate: 1.0
+
+# --- mavros plugins (alphabetical order) ---
+
+# 3dr_radio
+/**/tdr_radio:
+  ros__parameters:
+    low_rssi: 40
+
+# command
+/**/cmd:
+  ros__parameters:
+    use_comp_id_system_control: false
+
+# global_position
+/**/global_position:
+  ros__parameters:
+    frame_id: "map"
+    child_frame_id: "base_link"
+    rot_covariance: 99999.0
+    gps_uere: 1.0
+    use_relative_alt: true
+    tf.send: false
+    tf.frame_id: "map"
+    tf.global_frame_id: "earth"
+    tf.child_frame_id: "base_link"
+
+# imu_pub
+/**/imu:
+  ros__parameters:
+    frame_id: "base_link"
+    linear_acceleration_stdev: 0.0003
+    angular_velocity_stdev: 0.0003490659
+    orientation_stdev: 1.0
+    magnetic_stdev: 0.0
+
+# local_position
+/**/local_position:
+  ros__parameters:
+    frame_id: "map"
+    tf.send: true                 # ENABLED - needed for RTAB-Map / TF tree later
+    tf.frame_id: "map"
+    tf.child_frame_id: "base_link"
+    tf.send_fcu: false
+
+# setpoint_accel
+/**/setpoint_accel:
+  ros__parameters:
+    send_force: false
+
+# setpoint_attitude
+/**/setpoint_attitude:
+  ros__parameters:
+    reverse_thrust: false
+    use_quaternion: false
+    tf.listen: false
+    tf.frame_id: "map"
+    tf.child_frame_id: "target_attitude"
+    tf.rate_limit: 50.0
+
+# setpoint_raw
+/**/setpoint_raw:
+  ros__parameters:
+    thrust_scaling: 1.0
+
+# setpoint_position
+/**/setpoint_position:
+  ros__parameters:
+    tf.listen: false
+    tf.frame_id: "map"
+    tf.child_frame_id: "target_position"
+    tf.rate_limit: 50.0
+    mav_frame: LOCAL_NED
+
+# guided_target
+/**/guided_target:
+  ros__parameters:
+    tf.listen: false
+    tf.frame_id: "map"
+    tf.child_frame_id: "target_position"
+    tf.rate_limit: 50.0
+
+# setpoint_velocity
+/**/setpoint_velocity:
+  ros__parameters:
+    mav_frame: LOCAL_NED
+
+# waypoint
+/**/mission:
+  ros__parameters:
+    pull_after_gcs: true
+    use_mission_item_int: true
+
+# --- mavros extras plugins ---
+
+# distance_sensor
+## Orientation 25 = PITCH_270 = downward-facing (MTF-01 rangefinder)
+/**/distance_sensor:
+  ros__parameters:
+    config: |
+      rangefinder_down:
+        id: 0
+        frame_id: "lidar_link"
+        orientation: PITCH_270
+        field_of_view: 0.1
+        send_tf: false
+        sensor_position: {x: 0.0, y: 0.0, z: -0.1}
+
+# image_pub
+/**/image:
+  ros__parameters:
+    frame_id: "px4flow"
+
+# landing_target
+/**/landing_target:
+  ros__parameters:
+    listen_lt: false
+    mav_frame: "LOCAL_NED"
+    land_target_type: "VISION_FIDUCIAL"
+    image.width: 640
+    image.height: 480
+    camera.fov_x: 2.0071286398
+    camera.fov_y: 2.0071286398
+    tf.send: true
+    tf.listen: false
+    tf.frame_id: "landing_target"
+    tf.child_frame_id: "camera_center"
+    tf.rate_limit: 10.0
+    target_size: {x: 0.3, y: 0.3}
+
+# mount_control
+/**/mount:
+  ros__parameters:
+    debounce_s: 4.0
+    err_threshold_deg: 10.0
+    negate_measured_roll: false
+    negate_measured_pitch: false
+    negate_measured_yaw: false
+
+# odom
+/**/odometry:
+  ros__parameters:
+    fcu.odom_parent_id_des: "odom"
+    fcu.odom_child_id_des: "base_link"
+    fcu.map_id_des: "map"
+
+# px4flow (MTF-01 optical flow)
+/**/px4flow:
+  ros__parameters:
+    frame_id: "px4flow"
+    ranger_fov: 0.118682
+    ranger_min_range: 0.3
+    ranger_max_range: 5.0
+
+# vision_pose_estimate - OpenVINS feeds here via vision_bridge
+/**/vision_pose:
+  ros__parameters:
+    tf.listen: false
+    tf.frame_id: "odom"
+    tf.child_frame_id: "vision_estimate"
+    tf.rate_limit: 10.0
+
+# vision_speed_estimate
+/**/vision_speed:
+  ros__parameters:
+    listen_twist: true
+    twist_cov: true
+
+# vibration
+/**/vibration:
+  ros__parameters:
+    frame_id: "base_link"
+
+# camera
+/**/camera:
+  ros__parameters:
+    frame_id: "base_link"

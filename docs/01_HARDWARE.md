@@ -101,9 +101,14 @@ continuous draw.
                                       ├──► ESC 3 ──► Motor 3 (rear-left,   CCW)
                                       └──► ESC 4 ──► Motor 4 (rear-right,  CW )
 
-  Each ESC signal wire ──► Pixhawk Cube Orange+ MAIN OUT 1-4
+  Each ESC signal wire ──► Pixhawk Cube Orange+  AUX OUT 1-4   ← AUX, not MAIN
   ESC ground ──► common ground with the flight controller
 ```
+
+> **ESCs go to AUX OUT, not MAIN OUT.** On the Cube Orange+, MAIN is driven by the separate IO
+> co-processor while **AUX comes directly from the FMU** — DShot and the cleaner timing path are
+> only available there. Set the motor assignment on the **AUX** tab in QGroundControl →
+> **Actuators**; using the MAIN tab will make the motor test appear to do nothing.
 
 - Motor order and rotation direction must match the PX4 **Quadrotor X** layout. Verify with
   QGroundControl → **Actuators / Motor Test** before ever fitting propellers.
@@ -161,6 +166,58 @@ for docking.
 orientation. The ESP32 measures both pads, works out which one is positive, and drives the
 H-bridge accordingly — so no mechanical keying or manual alignment is required. Details in
 [02 — Docking & Charging](02_DOCKING_CHARGING.md).
+
+### 2.6 Complete drone wiring — every connection
+
+Everything that plugs into something else, in one table.
+
+| # | From | To | Port / pins | Notes |
+|---|---|---|---|---|
+| 1 | Battery 4S | PDB / power rail | XT60 | Main power distribution |
+| 2 | PDB | Power Module | — | Voltage + current sense |
+| 3 | Power Module | Cube Orange+ | **`POWER1`** | Powers the FC and reports battery |
+| 4 | PDB | ESC 1–4 | solder / XT30 | Pack voltage to each ESC |
+| 5 | ESC 1 signal | Cube Orange+ | **`AUX OUT 1`** | Motor 1 — front-right, CCW |
+| 6 | ESC 2 signal | Cube Orange+ | **`AUX OUT 2`** | Motor 2 — front-left, CW |
+| 7 | ESC 3 signal | Cube Orange+ | **`AUX OUT 3`** | Motor 3 — rear-left, CCW |
+| 8 | ESC 4 signal | Cube Orange+ | **`AUX OUT 4`** | Motor 4 — rear-right, CW |
+| 9 | ESC 1–4 | Motors 1–4 | 3 phase wires | Swap **any two** to reverse rotation |
+| 10 | RC receiver | Cube Orange+ | `RCIN` (PPM/SBUS) | CH5 = mission start / pilot takeover |
+| 11 | MTF-01 optical flow | Cube Orange+ | `TELEM2` / a free UART | Flow **and** rangefinder over one link |
+| 12 | Jetson Orin Nano | Cube Orange+ | **USB** → `/dev/ttyACM0` @ 921600 | MAVLink; routed by `mavlink-router` |
+| 13 | RealSense D455 | Jetson | **USB 3.0** (blue port) | USB 3 required — USB 2 cannot carry 1280×720 @ 30 fps RGB-D |
+| 14 | PDB | 75 W buck converter | IN+ / IN− | Input 14.8–16.8 V |
+| 15 | Buck converter | Jetson Orin Nano | OUT+ / OUT− → barrel jack | **Set to 12 V with no load first** |
+| 16 | Battery | 4S BMS | balance + main leads | BMS handles balancing internally |
+| 17 | BMS charge output | Landing-gear pads | **2 wires** (+ / −) | Pad A / Pad B — polarity-agnostic |
+| 18 | SSD | Jetson | USB 3 / NVMe | Mounted at `/media/jetson/ROS2_SSD` |
+
+**Ground rule:** the flight controller, ESCs, Jetson, buck converter and BMS must all share a
+**common ground**. Without it, telemetry is noisy and sensor readings become unreliable.
+
+**Camera mounting:** the D455 faces **straight down**. This matters in software —
+`marker_cam_yaw_offset_deg: 270.0` and the `cam_x_sign` / `cam_y_sign` flags in
+`mission_params.yaml` describe this exact mounting rotation. Change the mounting and those must
+be re-derived.
+
+### 2.7 Base-station wiring — every connection
+
+| # | From | To | Pin | Notes |
+|---|---|---|---|---|
+| 1 | ESP32 | A4988 #1 | GPIO **16** → `STEP` | Motor 1 step pulses (hardware LEDC) |
+| 2 | ESP32 | A4988 #1 | GPIO **17** → `DIR` | Motor 1 direction |
+| 3 | ESP32 | A4988 #2 | GPIO **18** → `STEP` | Motor 2 |
+| 4 | ESP32 | A4988 #2 | GPIO **19** → `DIR` | Motor 2 |
+| 5 | ESP32 | BTS7960 | GPIO **26** → `RPWM` | Charge direction A |
+| 6 | ESP32 | BTS7960 | GPIO **27** → `LPWM` | Charge direction B |
+| 7 | ESP32 | BTS7960 | GPIO **25** → `R_EN` + `L_EN` | Single enable line for both halves |
+| 8 | Pad A divider | ESP32 | GPIO **32** (ADC1_CH4) | Voltage sense A |
+| 9 | Pad B divider | ESP32 | GPIO **33** (ADC1_CH5) | Voltage sense B |
+| 10 | 24 V supply | BTS7960 | `B+` / `B−` | Charge source |
+| 11 | BTS7960 | Copper landing pads | `M+` / `M−` | Charge current out |
+| 12 | Motor supply | A4988 ×2 | `VMOT` / `GND` | **100 µF cap across each** (required) |
+| 13 | ESP32 3.3 V | A4988 `VDD`, BTS7960 `VCC` | — | Logic power |
+| 14 | **All grounds** | common | — | ESP32 ↔ A4988 ↔ BTS7960 ↔ supply ↔ pad − |
 
 > The BMS is the last line of defence, but the base-station firmware has **no automatic charge
 > cut-off** in this build — supervise charging and end it by removing the drone or pressing
