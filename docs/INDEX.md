@@ -9,64 +9,64 @@ Look up a topic, a file, a parameter or an error message and go straight to the 
 
 ## A–Z topics
 
-| Topic | Where |
+| Topic | Where to read it |
 |---|---|
-| **A4988 stepper driver** | [01 §3.1](01_HARDWARE.md) wiring · [02 §6](02_DOCKING_CHARGING.md) motion control |
-| **Accuracy (~0.1 m)** | [10 §1](10_VIO_LOCALIZATION.md) · [How It Works §8](../HOW_IT_WORKS.md) |
-| **Altitude / height source** | [11 §4.1](11_PIXHAWK_PX4.md) `EKF2_HGT_REF` |
-| **Arena size (35 × 25 ft)** | [07 Stage 2](07_STAGE_GUIDE.md) `ARENA_LONG_FT` |
-| **AUX OUT (why not MAIN)** | [11 §1](11_PIXHAWK_PX4.md) · [01 §2.4](01_HARDWARE.md) |
-| **Battery / BMS / 2-pin charging** | [01 §2.5](01_HARDWARE.md) |
-| **Boundary (yellow) — on the drone** | [09 §5](09_DRONE_SOFTWARE.md) |
-| **Boundary (yellow) — in the map** | [07 Stage 2](07_STAGE_GUIDE.md) |
-| **`boundary_start_corner` options** | [13 Part 6](13_OPERATIONS.md) |
-| **Buck converter (12 V for Jetson)** | [01 §2.5](01_HARDWARE.md) |
-| **Bundle adjustment** | [How It Works §4](../HOW_IT_WORKS.md) · [07 Stage 1](07_STAGE_GUIDE.md) |
-| **Camera fails — what happens** | [10 §5](10_VIO_LOCALIZATION.md) |
-| **Camera mounting / orientation** | [01 §1a](01_HARDWARE.md) · [09 §3](09_DRONE_SOFTWARE.md) |
-| **Charging state machine** | [02 §5](02_DOCKING_CHARGING.md) |
-| **CLAHE** | [How It Works §4](../HOW_IT_WORKS.md) Stage 3 |
-| **Contact + polarity detection** | [02 §3](02_DOCKING_CHARGING.md) |
-| **Coordinates — how they're computed** | [07 Stage 4](07_STAGE_GUIDE.md) · [How It Works §4](../HOW_IT_WORKS.md) |
-| **`coordinates.csv` format** | [03 §2.1](03_DATA_TRANSFER.md) |
-| **DDS / CycloneDDS config** | [13 Part 1](13_OPERATIONS.md) A6 |
-| **DINOv2 (why, how)** | [How It Works §4, §8](../HOW_IT_WORKS.md) · [04 §5](04_PIPELINE.md) |
-| **Docking sequence** | [02 §2](02_DOCKING_CHARGING.md) |
-| **EKF2 parameters** | [11 §4](11_PIXHAWK_PX4.md) |
-| **ESC calibration / DShot** | [01 §2.4](01_HARDWARE.md) |
-| **False positives — how avoided** | [How It Works §8](../HOW_IT_WORKS.md) · [10 §2.5](10_VIO_LOCALIZATION.md) |
-| **Feature detection (the pipeline)** | [04](04_PIPELINE.md) · [07 Stage 3](07_STAGE_GUIDE.md) |
-| **Flight order (first flights)** | [13 Part 4](13_OPERATIONS.md) |
-| **GPS — why none** | [How It Works §5, §8](../HOW_IT_WORKS.md) · [11 §4.1](11_PIXHAWK_PX4.md) |
-| **HD proof image** | [07 Stage 3d](07_STAGE_GUIDE.md) |
-| **HSV calibration (yellow)** | [13 Part 2.3](13_OPERATIONS.md) · [09 §5](09_DRONE_SOFTWARE.md) |
-| **Initialization factor (IF = Q×A×S)** | [10 §2.1](10_VIO_LOCALIZATION.md) |
-| **Landing (why flow-only)** | [10 §5](10_VIO_LOCALIZATION.md) · [09 §4](09_DRONE_SOFTWARE.md) |
-| **Landing → transfer → pipeline chain** | [12](12_END_TO_END_AUTOMATION.md) |
-| **LoFTR** | [How It Works §4, §6](../HOW_IT_WORKS.md) |
-| **Loop closure** | [10 §3.2](10_VIO_LOCALIZATION.md) + diagram |
-| **LR image deliverable** | [07 Stage 3d](07_STAGE_GUIDE.md) |
-| **MAVLink routing** | [03 §4](03_DATA_TRANSFER.md) · [11 §2](11_PIXHAWK_PX4.md) |
-| **MAVROS config / plugins** | [11 §3](11_PIXHAWK_PX4.md) |
-| **Mission phases (survey flight)** | [09 §4](09_DRONE_SOFTWARE.md) · [README §1](../README.md) |
-| **Motor order / rotation** | [13 Part 3.2](13_OPERATIONS.md) · [01 §2.4](01_HARDWARE.md) |
-| **Mutual exclusion (two targets, one spot)** | [07 Stage 4](07_STAGE_GUIDE.md) |
-| **Optical flow ↔ vision switching** | [10 §1](10_VIO_LOCALIZATION.md) |
-| **Precision landing (WhyCode marker)** | [09 §3](09_DRONE_SOFTWARE.md) |
-| **PX4 parameters (full list)** | [11 §4](11_PIXHAWK_PX4.md) · file `drone/px4_params.params` |
-| **RealSense D455 settings** | [10 §4](10_VIO_LOCALIZATION.md) |
-| **RTAB-Map — setup** | [10 §3.3](10_VIO_LOCALIZATION.md) |
-| **RTAB-Map — parameters** | [10 §3.6](10_VIO_LOCALIZATION.md) · file `drone/viman_mission/viman_mission/rtabmap_config.py` |
-| **RTAB-Map — inspecting the map** | [10 §3.7](10_VIO_LOCALIZATION.md) |
-| **Seeding (VIO frame alignment)** | [10 §2.3](10_VIO_LOCALIZATION.md) |
-| **Stitching** | [07 Stage 1](07_STAGE_GUIDE.md) · [How It Works §4](../HOW_IT_WORKS.md) |
-| **Survey grid parameters** | `mission_params.yaml` → `survey_mission:` · [09 §4](09_DRONE_SOFTWARE.md) |
-| **Tokens / passwords / credentials** | [README §9](../README.md) security note |
-| **VIO gate (states 0–6)** | [10 §2.2](10_VIO_LOCALIZATION.md) |
-| **Voltage measurement (pads)** | [02 §4](02_DOCKING_CHARGING.md) · [01 §3.3](01_HARDWARE.md) |
-| **Watchdogs (divergence, jump, spike)** | [10 §2.5](10_VIO_LOCALIZATION.md) |
-| **Wiring — every connection** | [01 §2.6, §2.7](01_HARDWARE.md) |
-| **3D reconstruction** | [07 Stage 5](07_STAGE_GUIDE.md) · [How It Works §4](../HOW_IT_WORKS.md) |
+| **A4988 stepper driver** | [Hardware — wiring](01_HARDWARE.md) · [Docking & Charging — motion control](02_DOCKING_CHARGING.md) |
+| **Accuracy (~0.1 m)** | [VIO & Localization](10_VIO_LOCALIZATION.md) · [How It Works](../HOW_IT_WORKS.md) |
+| **Altitude / height source** | [Pixhawk & PX4 — `EKF2_HGT_REF`](11_PIXHAWK_PX4.md) |
+| **Arena size (35 × 25 ft)** | [Stage Guide — Stage 2](07_STAGE_GUIDE.md) · `ARENA_LONG_FT` |
+| **AUX OUT (why not MAIN)** | [Pixhawk & PX4 — connections](11_PIXHAWK_PX4.md) · [Hardware — propulsion](01_HARDWARE.md) |
+| **Battery / BMS / 2-pin charging** | [Hardware — power distribution](01_HARDWARE.md) |
+| **Boundary (yellow) — on the drone** | [Drone Software — boundary detection](09_DRONE_SOFTWARE.md) |
+| **Boundary (yellow) — in the map** | [Stage Guide — Stage 2](07_STAGE_GUIDE.md) |
+| **`boundary_start_corner` options** | [Operations — command reference](13_OPERATIONS.md) |
+| **Buck converter (12 V for Jetson)** | [Hardware — power distribution](01_HARDWARE.md) |
+| **Bundle adjustment** | [How It Works — Stage 1](../HOW_IT_WORKS.md) · [Stage Guide — Stage 1](07_STAGE_GUIDE.md) |
+| **Camera fails — what happens** | [VIO & Localization — failure behaviour](10_VIO_LOCALIZATION.md) |
+| **Camera mounting / orientation** | [Hardware — the built drone](01_HARDWARE.md) · [Drone Software](09_DRONE_SOFTWARE.md) |
+| **Charging state machine** | [Docking & Charging](02_DOCKING_CHARGING.md) |
+| **CLAHE** | [How It Works — Stage 3](../HOW_IT_WORKS.md) |
+| **Contact + polarity detection** | [Docking & Charging](02_DOCKING_CHARGING.md) |
+| **Coordinates — how they're computed** | [Stage Guide — Stage 4](07_STAGE_GUIDE.md) · [How It Works](../HOW_IT_WORKS.md) |
+| **`coordinates.csv` format** | [Data Transfer](03_DATA_TRANSFER.md) |
+| **DDS / CycloneDDS config** | [Operations — first-time setup](13_OPERATIONS.md) |
+| **DINOv2 (why, how)** | [How It Works](../HOW_IT_WORKS.md) · [Pipeline — Stage 3](04_PIPELINE.md) |
+| **Docking sequence** | [Docking & Charging](02_DOCKING_CHARGING.md) |
+| **EKF2 parameters** | [Pixhawk & PX4](11_PIXHAWK_PX4.md) |
+| **ESC calibration / DShot** | [Hardware — propulsion](01_HARDWARE.md) |
+| **False positives — how avoided** | [How It Works — design decisions](../HOW_IT_WORKS.md) · [VIO — watchdogs](10_VIO_LOCALIZATION.md) |
+| **Feature detection (the pipeline)** | [Pipeline](04_PIPELINE.md) · [Stage Guide — Stage 3](07_STAGE_GUIDE.md) |
+| **Flight order (first flights)** | [Operations — first flights](13_OPERATIONS.md) |
+| **GPS — why none** | [How It Works](../HOW_IT_WORKS.md) · [Pixhawk & PX4](11_PIXHAWK_PX4.md) |
+| **HD proof image** | [Stage Guide — Stage 3](07_STAGE_GUIDE.md) |
+| **HSV calibration (yellow)** | [Operations — calibration](13_OPERATIONS.md) · [Drone Software](09_DRONE_SOFTWARE.md) |
+| **Initialization factor (IF = Q×A×S)** | [VIO & Localization — the trust decision](10_VIO_LOCALIZATION.md) |
+| **Landing (why flow-only)** | [VIO & Localization](10_VIO_LOCALIZATION.md) · [Drone Software — mission flow](09_DRONE_SOFTWARE.md) |
+| **Landing → transfer → pipeline chain** | [End-to-End Automation](12_END_TO_END_AUTOMATION.md) |
+| **LoFTR** | [How It Works](../HOW_IT_WORKS.md) |
+| **Loop closure** | [VIO & Localization — RTAB-Map](10_VIO_LOCALIZATION.md) *(with diagram)* |
+| **LR image deliverable** | [Stage Guide — Stage 3](07_STAGE_GUIDE.md) |
+| **MAVLink routing** | [Data Transfer](03_DATA_TRANSFER.md) · [Pixhawk & PX4](11_PIXHAWK_PX4.md) |
+| **MAVROS config / plugins** | [Pixhawk & PX4 — MAVROS interface](11_PIXHAWK_PX4.md) |
+| **Mission phases (survey flight)** | [Drone Software — mission flow](09_DRONE_SOFTWARE.md) · [main README](../README.md) |
+| **Motor order / rotation** | [Operations — ground tests](13_OPERATIONS.md) · [Hardware — propulsion](01_HARDWARE.md) |
+| **Mutual exclusion (two targets, one spot)** | [Stage Guide — Stage 4](07_STAGE_GUIDE.md) |
+| **Optical flow ↔ vision switching** | [VIO & Localization — two position sources](10_VIO_LOCALIZATION.md) |
+| **Precision landing (WhyCode marker)** | [Drone Software](09_DRONE_SOFTWARE.md) |
+| **PX4 parameters (full list)** | [Pixhawk & PX4](11_PIXHAWK_PX4.md) · file `drone/px4_params.params` |
+| **RealSense D455 settings** | [VIO & Localization — camera pipeline](10_VIO_LOCALIZATION.md) |
+| **RTAB-Map — setup** | [VIO & Localization](10_VIO_LOCALIZATION.md) |
+| **RTAB-Map — parameters** | [VIO & Localization](10_VIO_LOCALIZATION.md) · file `drone/viman_mission/viman_mission/rtabmap_config.py` |
+| **RTAB-Map — inspecting the map** | [VIO & Localization](10_VIO_LOCALIZATION.md) |
+| **Seeding (VIO frame alignment)** | [VIO & Localization](10_VIO_LOCALIZATION.md) |
+| **Stitching** | [Stage Guide — Stage 1](07_STAGE_GUIDE.md) · [How It Works](../HOW_IT_WORKS.md) |
+| **Survey grid parameters** | [Drone Software](09_DRONE_SOFTWARE.md) · `mission_params.yaml` → `survey_mission:` |
+| **Tokens / passwords / credentials** | [main README — security note](../README.md) |
+| **VIO gate (states 0–6)** | [VIO & Localization](10_VIO_LOCALIZATION.md) |
+| **Voltage measurement (pads)** | [Docking & Charging](02_DOCKING_CHARGING.md) · [Hardware — voltage sensing](01_HARDWARE.md) |
+| **Watchdogs (divergence, jump, spike)** | [VIO & Localization](10_VIO_LOCALIZATION.md) |
+| **Wiring — every connection** | [Hardware — wiring tables](01_HARDWARE.md) |
+| **2D photos → 3D model** | [main README](../README.md) · [Stage Guide — Stage 5](07_STAGE_GUIDE.md) |
 
 ---
 
@@ -76,58 +76,58 @@ Look up a topic, a file, a parameter or an error message and go straight to the 
 
 | File | Role | Explained in |
 |---|---|---|
-| `iroc_pipeline_fixed.py` | **Main entry point**, all fixes and config flags | [04 §1](04_PIPELINE.md) |
-| `iroc_pipeline.py` | Base pipeline: stitching, field map, annotation | [04 §3, §4](04_PIPELINE.md) |
-| `stage3_robust.py` | Target matcher (DINOv2) | [04 §5](04_PIPELINE.md) |
-| `fused_search.py` | Model loading, image helpers, builds `drone_photos_lr/` | [04 §1](04_PIPELINE.md) |
-| `3d.py` | 3D reconstruction (OpenDroneMap) | [04 §7](04_PIPELINE.md) |
-| `make_lr.py` | Full-res references → 64×64 seeds | [07 §9](07_STAGE_GUIDE.md) |
-| `make_test_dataset.py` | Synthetic arena with ground truth | [00 §B5](00_INSTALL_EVERYTHING.md) |
+| `iroc_pipeline_fixed.py` | **Main entry point**, all fixes and config flags | [Pipeline](04_PIPELINE.md) |
+| `iroc_pipeline.py` | Base pipeline: stitching, field map, annotation | [Pipeline](04_PIPELINE.md) |
+| `stage3_robust.py` | Target matcher (DINOv2) | [Pipeline — Stage 3](04_PIPELINE.md) |
+| `fused_search.py` | Model loading, image helpers, builds `drone_photos_lr/` | [Pipeline](04_PIPELINE.md) |
+| `3d.py` | 3D reconstruction (OpenDroneMap) | [Stage Guide — Stage 5](07_STAGE_GUIDE.md) |
+| `make_lr.py` | Full-res references → 64×64 seeds | [Stage Guide](07_STAGE_GUIDE.md) |
+| `make_test_dataset.py` | Synthetic arena with known ground truth | [Install — verify](00_INSTALL_EVERYTHING.md) |
 
 ### Drone (`drone/viman_mission/viman_mission/`)
 
 | File | Role | Explained in |
 |---|---|---|
-| `mission_director.py` | Reference mission (hover) | [09 §3](09_DRONE_SOFTWARE.md) |
-| `survey_mission.py` | Lawnmower survey with photo capture | [09 §3, §4](09_DRONE_SOFTWARE.md) |
-| `survey_boundary_director.py` | Survey **+ live boundary clamping** ← the one you fly | [09 §3](09_DRONE_SOFTWARE.md) |
-| `vio_gate.py` | Scores VIO health, opens/closes the gate | [10 §2](10_VIO_LOCALIZATION.md) |
-| `vision_bridge.py` | RTAB-Map odom → `/mavros/vision_pose/pose` | [09 §3](09_DRONE_SOFTWARE.md) |
-| `rs_pipeline.py` | RealSense driver (hardware-stamped, aligned) | [10 §4](10_VIO_LOCALIZATION.md) |
-| `rtabmap_config.py` | All RTAB-Map tuning, one place | [10 §3.5, §3.6](10_VIO_LOCALIZATION.md) |
-| `yellow_boundary_detector.py` | Yellow tape → repulsion field | [09 §5](09_DRONE_SOFTWARE.md) |
-| `boundary_guard.py` | Stick clamp for manual flight | [09 §3](09_DRONE_SOFTWARE.md) |
-| `whycode_detector.py` | Marker detection for landing | [09 §3](09_DRONE_SOFTWARE.md) |
-| `boundary_test_auto.py` | Autonomous 4-corner finding | [09 §3](09_DRONE_SOFTWARE.md) |
-| `common.py` | Shared QoS, covariance checks, frames | [09 §3](09_DRONE_SOFTWARE.md) |
+| `survey_boundary_director.py` | **The mission you fly** — survey + live boundary clamping | [Drone Software](09_DRONE_SOFTWARE.md) |
+| `survey_mission.py` | Lawnmower survey with photo capture | [Drone Software](09_DRONE_SOFTWARE.md) |
+| `mission_director.py` | Reference mission (hover) | [Drone Software](09_DRONE_SOFTWARE.md) |
+| `vio_gate.py` | Scores VIO health, opens/closes the gate | [VIO & Localization](10_VIO_LOCALIZATION.md) |
+| `vision_bridge.py` | RTAB-Map odom → `/mavros/vision_pose/pose` | [Drone Software](09_DRONE_SOFTWARE.md) |
+| `rs_pipeline.py` | RealSense driver (hardware-stamped, aligned) | [VIO & Localization](10_VIO_LOCALIZATION.md) |
+| `rtabmap_config.py` | All RTAB-Map tuning, in one place | [VIO & Localization](10_VIO_LOCALIZATION.md) |
+| `yellow_boundary_detector.py` | Yellow tape → repulsion field | [Drone Software](09_DRONE_SOFTWARE.md) |
+| `boundary_guard.py` | Stick clamp for manual flight | [Drone Software](09_DRONE_SOFTWARE.md) |
+| `whycode_detector.py` | Marker detection for precision landing | [Drone Software](09_DRONE_SOFTWARE.md) |
+| `boundary_test_auto.py` | Autonomous 4-corner finding | [Drone Software](09_DRONE_SOFTWARE.md) |
+| `common.py` | Shared QoS, covariance checks, frame conventions | [Drone Software](09_DRONE_SOFTWARE.md) |
 
 ### Configuration files
 
 | File | Contains | Explained in |
 |---|---|---|
-| `drone/viman_mission/config/mission_params.yaml` | **All mission tuning** (every node) | [09](09_DRONE_SOFTWARE.md), [13](13_OPERATIONS.md) |
-| `drone/px4_params.params` | PX4 parameters (EKF2, failsafe, PIDs) | [11 §4](11_PIXHAWK_PX4.md) |
-| `drone/px4_config.yaml` | MAVROS plugin settings | [11 §3.3](11_PIXHAWK_PX4.md) |
-| `drone/px4_pluginlists.yaml` | Which MAVROS plugins load | [11 §3.2](11_PIXHAWK_PX4.md) |
-| `drone/main.conf` | mavlink-router endpoints | [03 §4.1](03_DATA_TRANSFER.md) |
-| `drone/cyclonedds.xml` | ROS 2 DDS settings | [13 Part 1](13_OPERATIONS.md) |
-| `drone/landing-transfer.service` | Auto-transfer systemd unit | [12 §6](12_END_TO_END_AUTOMATION.md) |
-| `esp32_firmware/*.ino` | Docking + charging firmware | [02](02_DOCKING_CHARGING.md) |
+| `drone/viman_mission/config/mission_params.yaml` | **All mission tuning** (every node) | [Drone Software](09_DRONE_SOFTWARE.md) · [Operations](13_OPERATIONS.md) |
+| `drone/px4_params.params` | PX4 parameters (EKF2, failsafe, PIDs) | [Pixhawk & PX4](11_PIXHAWK_PX4.md) |
+| `drone/px4_config.yaml` | MAVROS plugin settings | [Pixhawk & PX4](11_PIXHAWK_PX4.md) |
+| `drone/px4_pluginlists.yaml` | Which MAVROS plugins load | [Pixhawk & PX4](11_PIXHAWK_PX4.md) |
+| `drone/main.conf` | mavlink-router endpoints | [Data Transfer](03_DATA_TRANSFER.md) |
+| `drone/cyclonedds.xml` | ROS 2 DDS settings | [Operations](13_OPERATIONS.md) |
+| `drone/landing-transfer.service` | Auto-transfer systemd unit | [End-to-End Automation](12_END_TO_END_AUTOMATION.md) |
+| `esp32_firmware/*.ino` | Docking + charging firmware | [Docking & Charging](02_DOCKING_CHARGING.md) |
 
 ### Dashboard (`base_station/`)
 
 | File | Role | Explained in |
 |---|---|---|
-| `server.py` | REST + WebSocket API, image serving | [04 §1](04_PIPELINE.md) |
-| `config.py` | Paths, environment settings, result-set switching | [04 §1](04_PIPELINE.md) |
-| `pipeline_runner.py` | Runs the pipeline, streams logs | [04 §1](04_PIPELINE.md) |
-| `drone_link/mavlink_link.py` | Live MAVLink telemetry | [04 §1](04_PIPELINE.md) |
+| `server.py` | REST + WebSocket API, image serving | [Pipeline](04_PIPELINE.md) |
+| `config.py` | Paths, environment settings, result-set switching | [Pipeline](04_PIPELINE.md) |
+| `pipeline_runner.py` | Runs the pipeline, streams logs to the browser | [Pipeline](04_PIPELINE.md) |
+| `drone_link/mavlink_link.py` | Live MAVLink telemetry | [Pipeline](04_PIPELINE.md) |
 
 ---
 
 ## Parameter lookup
 
-| I want to change… | Parameter | File |
+| I want to change… | Parameter | In which file |
 |---|---|---|
 | Arena dimensions | `ARENA_LONG_FT`, `ARENA_SHORT_FT` | `iroc_pipeline_fixed.py` |
 | Yellow mask (map side) | `YELLOW_S` | `iroc_pipeline_fixed.py` |
@@ -141,26 +141,26 @@ Look up a topic, a file, a parameter or an error message and go straight to the 
 | Boundary standoff distance | `boundary_keep_dist_m`, `stop_dist_m` | `mission_params.yaml` |
 | Charging thresholds | `HIGH_THRESHOLD`, `DIVIDER_RATIO` | `esp32_firmware/*.ino` |
 
-Full explanations: [Parameters Guide](../PARAMETERS_GUIDE.md) · [07 — Stage Guide](07_STAGE_GUIDE.md)
+Full explanations → [Parameters Guide](../PARAMETERS_GUIDE.md) · [Stage Guide](07_STAGE_GUIDE.md)
 
 ---
 
 ## Error / log message lookup
 
-| You see | Meaning | Go to |
+| You see | What it means | Go to |
 |---|---|---|
-| `Stitched 15/35 photos` | Photos dropped during stitching | [08 §2](08_TROUBLESHOOTING.md) |
-| `[fix#13] spatial pairing…` | VIO-based pairing is active (good) | [07 Stage 1](07_STAGE_GUIDE.md) |
-| `[fix#3] TRUE size …` | Metric scale applied (good) | [07 Stage 2](07_STAGE_GUIDE.md) |
-| `[fix#1 base-origin] …` | Base-station origin applied (good) | [07 Stage 4](07_STAGE_GUIDE.md) |
-| `peak=… V=…` | Per-target match scores | [07 Stage 3](07_STAGE_GUIDE.md) |
-| `NOT FOUND` | Target rejected by the thresholds | [08 §4](08_TROUBLESHOOTING.md) |
-| `Odometry lost!` | RTAB-Map tracking failed | [10 §5](10_VIO_LOCALIZATION.md) |
-| `vio_state: 4/5/6` | A gate watchdog tripped | [10 §2.2, §2.5](10_VIO_LOCALIZATION.md) |
-| `no heartbeat within Ns` | MAVLink not reaching the dashboard | [08 §7](08_TROUBLESHOOTING.md) |
-| `ParameterNotDeclaredException` | RTAB-Map param in the wrong channel | [10 §3.5](10_VIO_LOCALIZATION.md) |
-| `Waiting for drone to land...` | Auto-transfer service is healthy | [12 §2](12_END_TO_END_AUTOMATION.md) |
-| `externally-managed-environment` | pip needs `--break-system-packages` | [08 §1](08_TROUBLESHOOTING.md) |
+| `Stitched 15/35 photos` | Photos dropped during stitching | [Troubleshooting — stitching](08_TROUBLESHOOTING.md) |
+| `[fix#13] spatial pairing…` | VIO-based pairing is active — good | [Stage Guide — Stage 1](07_STAGE_GUIDE.md) |
+| `[fix#3] TRUE size …` | Metric scale applied — good | [Stage Guide — Stage 2](07_STAGE_GUIDE.md) |
+| `[fix#1 base-origin] …` | Base-station origin applied — good | [Stage Guide — Stage 4](07_STAGE_GUIDE.md) |
+| `peak=… V=…` | Per-target match scores | [Stage Guide — Stage 3](07_STAGE_GUIDE.md) |
+| `NOT FOUND` | Target rejected by the thresholds | [Troubleshooting — matching](08_TROUBLESHOOTING.md) |
+| `Odometry lost!` | RTAB-Map tracking failed | [VIO & Localization](10_VIO_LOCALIZATION.md) |
+| `vio_state: 4 / 5 / 6` | A gate watchdog tripped | [VIO & Localization](10_VIO_LOCALIZATION.md) |
+| `no heartbeat within Ns` | MAVLink not reaching the dashboard | [Troubleshooting — MAVLink](08_TROUBLESHOOTING.md) |
+| `ParameterNotDeclaredException` | RTAB-Map parameter in the wrong channel | [VIO & Localization](10_VIO_LOCALIZATION.md) |
+| `Waiting for drone to land...` | Auto-transfer service is healthy | [End-to-End Automation](12_END_TO_END_AUTOMATION.md) |
+| `externally-managed-environment` | pip needs `--break-system-packages` | [Troubleshooting — install](08_TROUBLESHOOTING.md) |
 
 ---
 
