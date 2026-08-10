@@ -1,6 +1,23 @@
-# Drone Project — Handoff Context File
+> ## ⚠️ HISTORICAL — do not follow this file
+>
+> These are **early development notes (May 2026)** from the bring-up phase, kept only as a record
+> of how the system was built. **Several details here are now wrong:**
+>
+> | This file says | The system actually uses |
+> |---|---|
+> | ORB-SLAM3 for VIO | **RTAB-Map** — see [10 — VIO & Localization](../../docs/10_VIO_LOCALIZATION.md) |
+> | `/dev/ttyACM1` | `/dev/ttyACM0` |
+> | 640×480 camera streams | **1280×720 @ 30 fps** |
+> | Standalone Python scripts | The `viman_mission` ROS 2 package |
+>
+> **For the current system, read [docs/](../../docs/) — start with
+> [09 — Drone Software](../../docs/09_DRONE_SOFTWARE.md) and
+> [13 — Operations](../../docs/13_OPERATIONS.md).**
+
+---
+
+# Drone Project — Handoff Context File (historical)
 **Last updated:** May 31, 2026
-**For:** Next Claude session to continue setup
 
 ---
 
