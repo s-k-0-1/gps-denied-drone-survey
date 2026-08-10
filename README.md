@@ -82,7 +82,7 @@ More debug views: [`docs/images/`](docs/images/) · Expected output format: [`ex
 
 ```bash
 # 1. clone
-git clone https://github.com/<your-username>/gps-denied-drone-survey.git
+git clone https://github.com/s-k-0-1/gps-denied-drone-survey.git
 cd gps-denied-drone-survey
 
 # 2. install (Python 3.10+)
@@ -154,11 +154,22 @@ gps-denied-drone-survey/
 │   └── static/                ← dashboard UI (HTML/CSS/JS)
 │
 ├── drone/                     ← ON-DRONE software (Jetson, ROS 2)
-│   ├── viman_mission/         ← ROS 2 package: missions, VIO gate, perception
-│   │   ├── viman_mission/     ← nodes (mission_director, survey_mission, vio_gate, …)
-│   │   ├── launch/            ← bringup.launch.py and mission launches
-│   │   └── config/            ← mission_params.yaml (all tuning)
-│   └── px4_params.params      ← exported PX4 parameters (EKF2, failsafe, PIDs)
+│   ├── viman_mission/         ← main ROS 2 package
+│   │   ├── viman_mission/     ← nodes: mission_director, survey_mission, vio_gate,
+│   │   │                         rs_pipeline, yellow_boundary_detector, boundary_guard,
+│   │   │                         whycode_detector, precision_land, vision_bridge …
+│   │   ├── launch/            ← bringup / survey_boundary / boundary_guard / hsv_calibrate
+│   │   └── config/            ← mission_params.yaml  (ALL tuning lives here)
+│   ├── whycode-ros2/          ← fiducial marker detection (C++) for precision landing
+│   ├── whycode_interfaces/    ← marker message + service definitions
+│   ├── scripts/               ← landing_transfer_node.py — auto data transfer on touchdown
+│   ├── legacy/                ← earlier standalone scripts, kept for reference
+│   ├── px4_params.params      ← exported PX4 parameters (EKF2, failsafe, PIDs)
+│   ├── px4_config.yaml        ← MAVROS plugin configuration
+│   ├── px4_pluginlists.yaml   ← which MAVROS plugins load
+│   ├── main.conf              ← mavlink-router routing
+│   ├── cyclonedds.xml         ← ROS 2 DDS configuration
+│   └── landing-transfer.service ← systemd unit for the auto transfer
 │
 ├── esp32_firmware/            ← docking + charging firmware (Arduino)
 │   └── full_base_station_wifi.ino
