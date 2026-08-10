@@ -4,6 +4,11 @@ Everything about this system, written for someone seeing it for the first time.
 
 ---
 
+> 🔎 **Looking for something specific?** → **[INDEX — where to find anything](INDEX.md)**
+> (A–Z topics · every file explained · parameter lookup · error-message lookup)
+
+---
+
 ## Start here
 
 | I want to… | Read |

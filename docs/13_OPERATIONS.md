@@ -8,20 +8,23 @@ Most steps are done with the **propellers removed**; the doc says clearly when p
 
 ---
 
-## How to use this document
+## Contents
 
-```
-PART 1  Install everything on a new Jetson        (props OFF)
-PART 2  Bench tests — prove each subsystem        (props OFF)
-PART 3  Ground tests with the flight controller   (props OFF)
-PART 4  First flights, in increasing risk order   (props ON)
-PART 5  Normal flight-day sequence
-PART 6  Command reference — every script, what it does
-PART 7  Edit → build → deploy
-PART 8  When the network changes
-```
+| Part | What | Props |
+|---|---|---|
+| **[1 — First-time setup](#part-1--first-time-setup-props-off)** | Install everything on a new Jetson | OFF |
+| **[2 — Bench tests](#part-2--bench-tests-props-off-drone-on-the-table)** | Prove each subsystem alone: camera, yellow, WhyCode, VIO carry-test | OFF |
+| **[3 — Ground tests](#part-3--ground-tests-with-the-flight-controller-props-still-off)** | MAVLink, motor order, vision reaching PX4, automation | OFF |
+| **[4 — First flights](#part-4--first-flights-props-on-in-this-order)** | 6 flights in increasing risk order | **ON** |
+| **[5 — Flight day](#part-5--normal-flight-day-sequence)** | The normal 3-terminal sequence | ON |
+| **[6 — Command reference](#part-6--command-reference-what-every-command-does)** | Every command and what it does | — |
+| **[7 — Edit → build → deploy](#part-7--edit--build--deploy)** | Changing parameters and code | — |
+| **[8 — Network changes](#part-8--when-the-network-changes)** | New WiFi / new IPs | — |
+| **[Pre-flight checklist](#pre-flight-checklist-print-this)** | Print this | — |
 
 Each step has a **✅ TEST** box. If it fails, fix it there — a later step will not work anyway.
+
+> 🔎 Looking for one specific command or parameter? → **[INDEX](INDEX.md)**
 
 ---
 

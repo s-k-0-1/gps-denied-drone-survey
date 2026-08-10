@@ -172,6 +172,9 @@ Full install for all three machines → [00 — Install Everything](docs/00_INST
 
 Written for someone who has never seen this project before. Read in order.
 
+> 🔎 **[INDEX — where to find anything](docs/INDEX.md)** — A–Z topics, every file explained,
+> parameter lookup, error-message lookup. Start here if you are searching for something specific.
+
 | Doc | What's inside |
 |---|---|
 | **[00 — Install Everything](docs/00_INSTALL_EVERYTHING.md)** | All three machines from zero, in the order you use them: **A** drone → **B** ground PC → **C** ESP32 |
