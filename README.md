@@ -179,7 +179,7 @@ Written for someone who has never seen this project before. Read in order.
 | **[02 — Docking & Charging](docs/02_DOCKING_CHARGING.md)** | ESP32 firmware: docking sequence, contact + polarity detection, voltage measurement, charging state machine |
 | **[03 — Data Transfer](docs/03_DATA_TRANSFER.md)** | Photos and telemetry from drone → Jetson → ground PC; MAVLink routing; file layout |
 | **[04 — Pipeline / Feature Detection](docs/04_PIPELINE.md)** | Stage-by-stage detection, and what **every file** does |
-| **[05 — Setup](docs/05_SETUP.md)** | Ground-PC installation walkthrough |
+| **[05 — Setup](docs/05_SETUP.md)** | Ground-PC installation walkthrough (expanded version of 00's Part B) |
 | **[06 — Git & GitHub](docs/06_GIT_GITHUB.md)** | Complete beginner's guide to git |
 | **[07 — Stage Guide](docs/07_STAGE_GUIDE.md)** | Per-stage: what runs, which file, the few parameters that matter, how to fix it |
 | **[08 — Troubleshooting](docs/08_TROUBLESHOOTING.md)** | Every symptom → fix, in one table |

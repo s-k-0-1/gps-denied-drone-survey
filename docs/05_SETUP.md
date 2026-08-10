@@ -1,7 +1,12 @@
-# 05 — Setup
+# 05 — Setup (ground PC)
 
-How to get this running on a computer that has never seen the project. Follow the section that
-matches your machine, then the common steps.
+A detailed walkthrough for installing the **ground-station side** — the feature-detection pipeline
+and the dashboard — on a computer that has never seen this project.
+
+> **Setting up the whole system?** Start with
+> [00 — Install Everything](00_INSTALL_EVERYTHING.md), which covers all three machines in the
+> order you actually use them (drone → ground PC → base station). This document is the expanded
+> version of its **Part B**, with more detail on requirements, verification and troubleshooting.
 
 **Estimated time:** 20–40 minutes (mostly PyTorch downloading).
 
