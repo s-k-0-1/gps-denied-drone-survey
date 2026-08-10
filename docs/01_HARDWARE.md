@@ -37,9 +37,9 @@ The system has three physical units that talk to each other over one WiFi networ
 
 ## 1a. The built drone
 
-<img src="images/drone_build_angle.jpg" width="860">
+<img src="images/drone_build_angle.JPG" width="860">
 
-<img src="images/drone_build_top.jpg" width="860">
+<img src="images/drone_build_top.JPG" width="860">
 
 What you are looking at:
 

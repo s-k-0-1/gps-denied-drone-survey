@@ -18,7 +18,7 @@ GPS is accurate to metres; this task needs ~0.1 m, and it is unavailable indoors
 
 # 1 · The drone and the survey
 
-<img src="docs/images/drone_build_top.jpg" width="860">
+<img src="docs/images/drone_build_top.JPG" width="860">
 
 ## How a survey flight works
 
@@ -52,7 +52,7 @@ ros2 launch viman_mission survey_boundary.launch.py boundary_start_corner:=back_
 
 # 2 · Hardware
 
-<img src="docs/images/drone_build_angle.jpg" width="860">
+<img src="docs/images/drone_build_angle.JPG" width="860">
 
 | Part | Component |
 |---|---|
