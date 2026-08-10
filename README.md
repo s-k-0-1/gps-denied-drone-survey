@@ -200,50 +200,63 @@ Written for someone who has never seen this project before. Read in order.
 
 # 7 · Repository structure
 
+Ordered the way the system runs: **survey → feature detection → dashboard → base station.**
+
 ```
 gps-denied-drone-survey/
-├── iroc_pipeline_fixed.py     ← MAIN entry point (all fixes applied)
-├── iroc_pipeline.py           ← base pipeline: stitching, field map, annotation
-├── stage3_robust.py           ← target matcher (DINOv2 semantic)
-├── fused_search.py            ← shared model loading + image helpers
-├── 3d.py                      ← optional 3D reconstruction (OpenDroneMap)
-├── make_lr.py                 ← build LR seed images from full-res references
-├── make_test_dataset.py       ← synthetic dataset generator (for testing)
 │
-├── drone/                     ← ON-DRONE software (Jetson, ROS 2)
-│   ├── viman_mission/         ← main ROS 2 package
-│   │   ├── viman_mission/     ← nodes: mission_director, survey_mission, vio_gate,
-│   │   │                         rs_pipeline, yellow_boundary_detector, boundary_guard,
-│   │   │                         whycode_detector, precision_land, vision_bridge …
-│   │   ├── launch/            ← bringup / survey_boundary / boundary_guard / hsv_calibrate
-│   │   └── config/            ← mission_params.yaml  (ALL tuning lives here)
-│   ├── whycode-ros2/          ← fiducial marker detection (C++) for precision landing
-│   ├── whycode_interfaces/    ← marker message + service definitions
-│   ├── scripts/               ← landing_transfer_node.py — auto data transfer on touchdown
-│   ├── legacy/                ← earlier standalone scripts, kept for reference
-│   ├── px4_params.params      ← exported PX4 parameters (EKF2, failsafe, PIDs)
-│   ├── px4_config.yaml        ← MAVROS plugin configuration
-│   ├── px4_pluginlists.yaml   ← which MAVROS plugins load
-│   ├── main.conf              ← mavlink-router routing
-│   ├── cyclonedds.xml         ← ROS 2 DDS configuration
+│ ── 1 · SURVEY — on-drone software (Jetson, ROS 2) ─────────────────────────
+├── drone/
+│   ├── viman_mission/           ← main ROS 2 package
+│   │   ├── viman_mission/       ← nodes: survey_mission, survey_boundary_director,
+│   │   │                           mission_director, vio_gate, rs_pipeline,
+│   │   │                           yellow_boundary_detector, boundary_guard,
+│   │   │                           whycode_detector, precision_land, vision_bridge …
+│   │   ├── launch/              ← survey_boundary / bringup / boundary_guard / hsv_calibrate
+│   │   └── config/              ← mission_params.yaml   (ALL mission tuning lives here)
+│   ├── whycode-ros2/            ← fiducial marker detection (C++) for precision landing
+│   ├── whycode_interfaces/      ← marker message + service definitions
+│   ├── scripts/                 ← landing_transfer_node.py — auto data transfer on touchdown
+│   ├── legacy/                  ← earlier standalone scripts, kept for reference
+│   ├── px4_params.params        ← exported PX4 parameters (EKF2, failsafe, PIDs)
+│   ├── px4_config.yaml          ← MAVROS plugin configuration
+│   ├── px4_pluginlists.yaml     ← which MAVROS plugins load
+│   ├── main.conf                ← mavlink-router routing
+│   ├── cyclonedds.xml           ← ROS 2 DDS configuration
 │   └── landing-transfer.service ← systemd unit for the auto transfer
 │
-├── base_station/              ← live web dashboard (FastAPI + WebSocket)
-│   ├── server.py              ← REST + WebSocket API, image serving
-│   ├── config.py              ← all paths / environment settings
-│   ├── pipeline_runner.py     ← runs the pipeline as a subprocess, streams logs
-│   ├── results_store.py       ← reads results/, auto-refresh watcher
-│   ├── drone_link/            ← MAVLink link + simulator (hot-swappable)
-│   └── static/                ← dashboard UI (HTML/CSS/JS)
+│ ── 2 · FEATURE DETECTION — ground pipeline ────────────────────────────────
+├── iroc_pipeline_fixed.py       ← MAIN entry point (all fixes applied)
+├── iroc_pipeline.py             ← base pipeline: stitching, field map, annotation
+├── stage3_robust.py             ← target matcher (DINOv2 semantic)
+├── fused_search.py              ← shared model loading + image helpers
+├── 3d.py                        ← optional 3D reconstruction (OpenDroneMap)
+├── make_lr.py                   ← build LR seed images from full-res references
+├── make_test_dataset.py         ← synthetic dataset generator (for testing)
 │
-├── esp32_firmware/            ← docking + charging firmware (Arduino)
-├── docs/                      ← all documentation (start here)
-│   └── images/                ← build photos, results, architecture diagrams
-├── examples/                  ← what a successful run produces
+│ ── 3 · BASE STATION — live web dashboard ──────────────────────────────────
+├── base_station/
+│   ├── server.py                ← REST + WebSocket API, image serving
+│   ├── config.py                ← all paths / environment settings
+│   ├── pipeline_runner.py       ← runs the pipeline as a subprocess, streams logs
+│   ├── results_store.py         ← reads results/, auto-refresh watcher
+│   ├── drone_link/              ← MAVLink link + simulator (hot-swappable)
+│   └── static/                  ← dashboard UI (HTML/CSS/JS)
 │
-├── drone_photos/              ← INPUT: HD photos + coordinates.csv   (not in git)
-├── targets/                   ← INPUT: seed images                    (not in git)
-└── results/                   ← OUTPUT: mosaic, field map, targets    (not in git)
+│ ── 4 · DOCKING + CHARGING — ESP32 firmware ────────────────────────────────
+├── esp32_firmware/
+│   └── full_base_station_wifi.ino
+│
+│ ── Documentation and examples ─────────────────────────────────────────────
+├── docs/                        ← all documentation — START HERE
+│   ├── INDEX.md                 ← 🔎 find any topic, file, parameter or error
+│   └── images/                  ← build photos, results, architecture diagrams
+├── examples/                    ← what a successful run produces
+│
+│ ── Data (not in git) ──────────────────────────────────────────────────────
+├── drone_photos/                ← INPUT: HD photos + coordinates.csv
+├── targets/                     ← INPUT: 64×64 seed images
+└── results/                     ← OUTPUT: mosaic, field map, targets, 3D
 ```
 
 ---
