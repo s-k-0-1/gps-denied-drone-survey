@@ -35,6 +35,35 @@ The system has three physical units that talk to each other over one WiFi networ
 
 ---
 
+## 1a. The built drone
+
+<img src="images/drone_build_angle.jpg" width="860">
+
+<img src="images/drone_build_top.jpg" width="860">
+
+What you are looking at:
+
+| In the photo | Component | Notes |
+|---|---|---|
+| Orange box on the top plate | **Pixhawk Cube Orange+** (CubePilot) | Flight controller — the carrier board sits under it |
+| Folding carbon arms + centre plates | **Tarot TL65B01 Iron Man 650** | 650 mm wheelbase, arms fold for transport |
+| Motors at each arm end | **EMAX 935 KV** ×4 | Red anodised bell, visible EMAX branding |
+| Large black propellers | **1045** (10″ × 4.5″) ×4 | 2 CW + 2 CCW — check before every flight |
+| Modules taped along the arms | **LittleBee BLHeli_S 30 A ESCs** ×4 | Signal wires route to **AUX OUT 1–4** |
+| Blue module with heatsink (lower plate) | **75 W buck converter** | Steps the 4S pack down to 12 V for the Jetson |
+| Black pack under the centre plate | **4S Li-ion battery + BMS** | Charge leads go out to the landing-gear pads |
+| Yellow connectors | **XT60 / XT30** | Main pack and per-ESC power |
+| Small black module under a front arm | **Intel RealSense D455** | Mounted **facing straight down** |
+| Tall legs with taped feet | Landing gear | The two charging pads sit on the feet |
+| Board under the Cube | Carrier / power module | Battery voltage + current sense into `POWER1` |
+
+> **Camera orientation matters in software.** The D455 points straight down, and
+> `marker_cam_yaw_offset_deg: 270.0` plus the `cam_x_sign` / `cam_y_sign` flags in
+> `mission_params.yaml` encode exactly this mounting. If you remount the camera, those values must
+> be re-derived — see [09 — Drone Software](09_DRONE_SOFTWARE.md).
+
+---
+
 ## 2. Component list
 
 ### 2.1 Drone

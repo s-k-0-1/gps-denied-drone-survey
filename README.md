@@ -78,6 +78,19 @@ More debug views: [`docs/images/`](docs/images/) · Expected output format: [`ex
 
 ---
 
+## The drone
+
+<img src="docs/images/drone_build_top.jpg" width="860">
+
+Tarot 650 folding frame · EMAX 935 KV ×4 with 1045 props · BLHeli_S 30 A ESCs ·
+**Pixhawk Cube Orange+** (PX4) · **Jetson Orin Nano** powered through a 75 W buck converter ·
+**RealSense D455** facing down · MTF-01 optical flow · 4S Li-ion with a BMS feeding two
+charging pads on the landing gear.
+
+Full component list, wiring tables and photos: [01 — Hardware](docs/01_HARDWARE.md)
+
+---
+
 ## Quick start
 
 ```bash
