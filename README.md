@@ -125,7 +125,7 @@ Read these in order — they are written for someone who has never seen this pro
 
 | Doc | What's inside |
 |---|---|
-| **[00 — Install Everything](docs/00_INSTALL_EVERYTHING.md)** | Every download/install from zero: WSL2, Python, PyTorch, Docker, Arduino IDE, QGroundControl, mavlink-router |
+| **[00 — Install Everything](docs/00_INSTALL_EVERYTHING.md)** | All three machines from zero, in the order you use them: **A** drone (ROS 2, MAVROS, RTAB-Map, RealSense, PX4, survey) → **B** ground PC (feature detection + dashboard) → **C** ESP32 base station |
 | **[01 — Hardware](docs/01_HARDWARE.md)** | Drone + base-station hardware structure, component list, full wiring tables, how to use each part |
 | **[02 — Docking & Charging](docs/02_DOCKING_CHARGING.md)** | ESP32 firmware: how docking starts, contact & polarity detection, voltage measurement, the charging state machine, dashboard integration |
 | **[03 — Data Transfer](docs/03_DATA_TRANSFER.md)** | How photos and telemetry get from the drone → Jetson → ground PC; MAVLink routing; file layout |
