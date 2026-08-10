@@ -18,15 +18,21 @@ import glob
 import threading
 import urllib.request
 
-PC_USER = "sachin"
-PC_IP = "10.56.178.123"         # ⚠️ PC's IP on the phone LUMA hotspot (hostname -I)
-PC_PORT = "2222"
-PC_DEST_PATH = "/home/sachin/advanced_matcher/drone_photos/"
-SURVEY_ROOT = "/media/jetson/ROS2_SSD/survey/"
+# ── EDIT THESE FOR YOUR SETUP ────────────────────────────────────────────────
+# They can also be supplied as environment variables, which is preferable —
+# then nothing sensitive lives in the file:
+#     PC_USER=me PC_IP=192.168.1.100 DOCK_TOKEN=secret ros2 run ...
+PC_USER = os.environ.get("PC_USER", "YOUR_PC_USERNAME")
+PC_IP = os.environ.get("PC_IP", "192.168.1.100")   # ground PC IP — find it with: hostname -I
+PC_PORT = os.environ.get("PC_PORT", "22")          # SSH port on the ground PC
+PC_DEST_PATH = os.environ.get(
+    "PC_DEST_PATH", "/home/YOUR_PC_USERNAME/gps-denied-drone-survey/drone_photos/")
+SURVEY_ROOT = os.environ.get("SURVEY_ROOT", "/media/jetson/ROS2_SSD/survey/")
 
-# ── base station notify (added) ──
-BASE_URL = "http://10.56.178.123:8000"    # ⚠️ same PC IP as above (phone LUMA hotspot)
-DOCK_TOKEN = "lumadock"                    # must match IROC_TOKEN on the base station
+# ── base station notify ──
+BASE_URL = os.environ.get("BASE_URL", f"http://{PC_IP}:8000")
+DOCK_TOKEN = os.environ.get("DOCK_TOKEN", "CHANGE_ME")  # must match IROC_TOKEN on the base
+                                                        # station AND DOCK_TOKEN on the ESP32
 
 
 class LandingTransfer(Node):

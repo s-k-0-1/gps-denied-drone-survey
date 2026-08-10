@@ -125,7 +125,7 @@ Read these in order — they are written for someone who has never seen this pro
 | **[10 — VIO & Localization](docs/10_VIO_LOCALIZATION.md)** | How optical flow and RTAB-Map visual odometry are fused, the gated handover, and what happens when the camera fails |
 | **[11 — Pixhawk & PX4](docs/11_PIXHAWK_PX4.md)** | Flight-controller wiring, MAVROS interface, the PX4 parameters for GPS-denied flight, tuning order |
 | **[12 — End-to-End Automation](docs/12_END_TO_END_AUTOMATION.md)** | What happens automatically after touchdown: docking, data transfer, and the pipeline starting itself |
-| **[13 — Operations Runbook](docs/13_OPERATIONS.md)** | Every command: new-Jetson setup, flight-day sequence, mission variants, calibration, build/deploy, checklists |
+| **[13 — Operations Runbook](docs/13_OPERATIONS.md)** | **Every command, with a test after every step.** New-Jetson setup → bench tests (props off) → ground tests → first flights in risk order → flight-day sequence → build/deploy |
 | [How It Works](HOW_IT_WORKS.md) | Full explanation of every stage and algorithm, plus the design decisions behind them |
 | [Parameters Guide](PARAMETERS_GUIDE.md) | Every tunable parameter, when to change it and why |
 | [Run Guide](RUN_GUIDE.md) | Run + validation checklist |
