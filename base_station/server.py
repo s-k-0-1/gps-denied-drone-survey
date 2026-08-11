@@ -1,5 +1,5 @@
 """
-server.py — FastAPI backend for the ASCEND Base Station dashboard.
+server.py — FastAPI backend for the Drone Base Station dashboard.
 
 Run (from ~/advanced_matcher):
     python3 -m base_station.server
@@ -212,7 +212,7 @@ async def _telemetry_loop():
         await asyncio.sleep(period)
 
 
-app = FastAPI(title="ASCEND Base Station", lifespan=lifespan)
+app = FastAPI(title="Drone Base Station", lifespan=lifespan)
 
 
 def _check_auth(request) -> bool:
@@ -244,7 +244,7 @@ async def gate(request, call_next):
     elif config.AUTH_ENABLED and not _check_auth(request):
         return Response(
             status_code=401,
-            headers={"WWW-Authenticate": 'Basic realm="ASCEND Base Station"'},
+            headers={"WWW-Authenticate": 'Basic realm="Drone Base Station"'},
         )
     resp = await call_next(request)
     resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
@@ -591,7 +591,7 @@ async def photo(name: str):
 
 @app.get("/api/photos")
 async def api_photos():
-    """List photos received from ASCEND (drone_photos/ or newest survey run)."""
+    """List photos received from the drone (drone_photos/ or newest survey run)."""
     d = config.DRONE_PHOTOS_DIR if config.COORDINATES_CSV.exists() else config.newest_survey_dir()
     names = []
     if d and d.exists():

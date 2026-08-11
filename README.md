@@ -1,5 +1,5 @@
-# ASCEND — Autonomous Survey & Feature Localization
-### GPS-denied aerial mapping and object localization
+# GPS-Denied Drone Survey
+### Autonomous aerial mapping, object localization and 3D reconstruction
 
 **A drone flies itself over an arena and takes photos. This software tells you exactly where the
 objects of interest are — in metres, without GPS.**

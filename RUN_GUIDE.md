@@ -1,4 +1,4 @@
-# RUN & VALIDATION GUIDE — ASCEND Pipeline
+# Run & Validation Guide
 
 How to **run** the pipeline and how to **verify** it worked. Do a full run once and tick off the
 checklist below.
@@ -9,7 +9,7 @@ checklist below.
 
 | Needed | Where | Note |
 |---|---|---|
-| HD survey photos | `drone_photos/*.jpg` (1280×720) | Captured by ASCEND |
+| HD survey photos | `drone_photos/*.jpg` (1280×720) | Captured by the drone |
 | Position log | `drone_photos/coordinates.csv` | Must contain `x_enu, y_enu, z_enu, yaw, row, col, image_file` — stitching fixes #12/#13 depend on these |
 | Seed references | `targets/*.png` (64×64) | One small crop per object to find. Build them from full-res photos with `python3 make_lr.py` (reads `reference/`) |
 

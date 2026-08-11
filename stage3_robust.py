@@ -6,7 +6,7 @@ Rulebook (Elimination V3.0) ke hisaab se:
   * 3-5 LR (128x128) seed images = feature TYPES (layered rock / red-oxide / ice-patch).
   * Arena me har type ke 2-3 INSTANCES dhoondhne hain (exact same object NAHI -> geometric
     LoFTR/SuperPoint yahan weak; SEMANTIC match chahiye).
-  * "ASCEND shall be less-sensitive to illumination conditions" -> lighting-robust zaroori.
+  * Matching must be less sensitive to illumination conditions -> lighting-robust zaroori.
   * Matching 128x128 LR pe -> low quality inherent.
 
 METHOD (RoMa/DINOv2 SOTA se adapt, CPU-friendly):

@@ -1,6 +1,6 @@
 """
-config.py — Central configuration & path resolution for the ASCEND
-Base Station desktop dashboard.
+config.py — Central configuration & path resolution for the
+Drone Base Station desktop dashboard.
 
 All paths are derived from BASE_DIR, which defaults to the parent of this
 package (i.e. ~/advanced_matcher) so the app finds your existing pipeline
@@ -13,7 +13,7 @@ from pathlib import Path
 
 # Team / branding
 TEAM_NAME = os.environ.get("IROC_TEAM", "LUMA")
-DRONE_NAME = os.environ.get("IROC_DRONE", "ASCEND")
+DRONE_NAME = os.environ.get("IROC_DRONE", "DRONE")
 
 # ──────────────────────────────────────────────────────────────────────────
 # Core directories (match iroc_pipeline.py layout)

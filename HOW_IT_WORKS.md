@@ -1,4 +1,4 @@
-# ASCEND Pipeline — How It Works
+# How It Works
 
 **GPS-denied aerial survey → feature localization**
 
@@ -16,7 +16,7 @@ Three different images, three jobs:
 |---|---|---|---|
 | **Seed / reference** | **64×64** | Supplied as input — a small crop of the object to find | matching reference |
 | **Drone LR** | **128×128** | Down-sampled automatically from each HD `1280×720` photo | searched during matching |
-| **HD photo** | **1280×720** | ASCEND onboard camera | stitching + final HD proof + 3D |
+| **HD photo** | **1280×720** | Onboard camera | stitching + final HD proof + 3D |
 
 **Match (Stage 3) = seed-64 ↔ drone-128** — via DINOv2 features (different sizes are fine). **HD (720) is NOT used in matching.**
 

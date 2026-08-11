@@ -10,7 +10,7 @@ The system has three physical units that talk to each other over one WiFi networ
 
 ```
         ┌────────────────────────────────────────────┐
-        │  DRONE (ASCEND)                            │
+        │  DRONE                                     │
         │  • Tarot 650 frame · Emax 935 KV ×4        │
         │    1045 props · BLHeli_S 30 A ESCs ×4      │
         │  • Pixhawk Cube Orange+  (flight control)  │

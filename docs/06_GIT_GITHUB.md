@@ -133,7 +133,7 @@ Anything under ~50 MB is comfortable.
 
 ```bash
 # 1. save the snapshot
-git commit -m "Initial commit: ASCEND pipeline, dashboard, ESP32 firmware, docs"
+git commit -m "Initial commit: pipeline, dashboard, ESP32 firmware, docs"
 
 # 2. name the branch
 git branch -M main
@@ -316,7 +316,7 @@ git init
 git add -A
 git status --short | head -40        # ← confirm NO photos / results
 
-git commit -m "Initial commit: ASCEND pipeline, dashboard, ESP32 firmware, docs"
+git commit -m "Initial commit: pipeline, dashboard, ESP32 firmware, docs"
 git branch -M main
 git remote add origin https://github.com/<your-username>/gps-denied-drone-survey.git
 git push -u origin main              # username + TOKEN

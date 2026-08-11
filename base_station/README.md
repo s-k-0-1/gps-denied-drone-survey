@@ -1,6 +1,6 @@
-# ASCEND Base Station Dashboard
+# Drone Base Station Dashboard
 
-A real-time desktop dashboard to command the ASCEND drone and monitor the
+A real-time desktop dashboard to command the drone and monitor the
 survey + matching pipeline live. It's a **FastAPI web app**: the server
 runs in WSL alongside your CUDA/Docker pipeline, and you open the dashboard in
 your Windows browser. No X-server needed.
