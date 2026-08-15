@@ -46,7 +46,30 @@ ros2 launch viman_mission survey_boundary.launch.py boundary_start_corner:=back_
   lead within 0.5 m of any arena line, in autonomous *or* manual flight.
 - **Autonomous corner finding**, marker precision landing, and a stick-clamp guard for manual flying.
 
+## The flight, as the drone recorded it
+
+This is not a plan or a simulation — it is the **actual path flown**, recovered by RTAB-Map from
+the camera alone, with **no GPS**. The ground underneath is the live point cloud built during the
+same flight.
+
+<img src="docs/images/rtabmap_3d_map_top.png" width="900">
+
+| Colour | Meaning |
+|---|---|
+| 🟣 **Magenta / purple** | **Survey** — the lawnmower sweep. One marker per keyframe. |
+| 🟡 **Yellow** | **Return to home** — the straight leg back to the base station. |
+| 🔵 **Cyan** | **Takeoff / landing** at the base-station pad. |
+| 🔴 **Red** | **Loop closure** — the drone recognized a place it had seen before and corrected its drift. |
+| ⚪ **White speckle** | The point cloud itself, not a path. |
+
+<img src="docs/images/rtabmap_3d_map_oblique.png" width="620">
+
+*Tilted view. Parallel, evenly spaced stripes at constant height = odometry held for the whole
+flight. The gap between the end of the yellow leg and the cyan takeoff stub is the drift, measured
+directly off the map.*
+
 → [09 — Drone Software](docs/09_DRONE_SOFTWARE.md) · [10 — VIO & Localization](docs/10_VIO_LOCALIZATION.md)
+· [Reading the 3D map](docs/10_VIO_LOCALIZATION.md#38-reading-the-3d-map-real-flight-screenshots)
 
 ---
 

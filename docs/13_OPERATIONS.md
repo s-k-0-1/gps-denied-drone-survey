@@ -293,7 +293,7 @@ Hold the drone ~1 m above **textured** ground.
 > Now **carry the drone 1 m sideways** — `init_factor` must stay high and
 > `/viman/vio_state` should reach **3 (OPEN)**. This validates the whole VIO chain with zero
 > flight risk. Odometry below 15 Hz → see the tuning table in
-> [10 — VIO](10_VIO_LOCALIZATION.md#38-tuning-checklist).
+> [10 — VIO](10_VIO_LOCALIZATION.md#39-tuning-checklist).
 
 ---
 

@@ -254,10 +254,56 @@ rtabmap-export --cloud --output cloud.ply flight_<ts>.db
 In `rtabmap-databaseViewer`, **Graph View** shows the trajectory with loop-closure links drawn
 between nodes — that is the picture of what the diagram above describes, on your own flight.
 
-> **Add your own screenshots here.** A Graph View image and a 3D cloud image from a real flight
-> make this section far easier to follow. Save them to `docs/images/` and reference them.
+### 3.8 Reading the 3D map (real flight screenshots)
 
-### 3.8 Tuning checklist
+These are RTAB-Map's own **3D Map** view from real flights over the arena. The coloured lines are
+the **flight path** — RTAB-Map draws one marker per keyframe (map node) and joins consecutive
+keyframes with a line. The greyish/white speckle underneath is the **point cloud** itself: every
+RGB-D frame's depth image, projected into the map and stitched by the optimized pose graph.
+
+<img src="images/rtabmap_3d_map_top.png" width="900">
+
+*Top-down. The yellow arena boundary and the blue tarpaulin are real map geometry — they come out
+of the point cloud, not from any drawing.*
+
+#### Line colour legend
+
+| Colour | What it is | Where it comes from |
+|---|---|---|
+| **Magenta / purple** | **Survey path** — the lawnmower (boustrophedon) sweep over the arena. One square per keyframe, so the spacing also tells you the capture rate. | the optimized pose graph (`/rtabmap/mapGraph`) |
+| **Yellow** | **Return-to-home leg** — the straight diagonal from the last survey stripe back to the base-station corner. | same graph, flown after the survey completes |
+| **Cyan** | **Takeoff / landing stub** at the base station — the few metres between the pad and the start of the survey. | same graph, first and last nodes |
+| **Red** *(when present)* | **Loop-closure link** — RTAB-Map recognized a place it had already seen and tied the two nodes together. Every red link is one drift correction. | §3.2 |
+| **White / grey dots** | **Not a path** — this is the dense point cloud and the ground texture (tyre marks, chalk lines). | RGB-D depth frames |
+
+> If a leg looks like a *straight line with no keyframe markers*, RTAB-Map had no visual odometry
+> there — the drone was flying on optical flow alone and the gate was closed. That is normal for
+> the final descent (landing is flow-only by design, §1).
+
+<img src="images/rtabmap_3d_map_oblique.png" width="620">
+
+*Same flight, tilted. The magenta stripes sit at a constant height above the surface — that flat,
+parallel look is what a **healthy** map looks like. If the stripes bow, step, or drift apart from
+each other, odometry was accumulating error between stripes (see §3.9).*
+
+<img src="images/rtabmap_3d_map_gui.jpg" width="720">
+
+*A different flight seen live in the RTAB-Map GUI (`rtabmapviz`) while the drone was still in the
+air. The magenta path is being extended in real time as each keyframe is added; the cyan stub on
+the right is the takeoff.*
+
+**What to check on these maps after every flight**
+
+1. **Do the survey stripes stay parallel and evenly spaced?** If yes, odometry held. If the last
+   stripe is visibly shifted from the first, you have drift — raise `Rtabmap/DetectionRate` so loop
+   closures are attempted more often.
+2. **Is the surface flat?** A bowl or dome shape means scale error from the depth camera.
+3. **Does the return leg land back on the takeoff point?** The gap between the end of the yellow
+   line and the cyan stub is your **loop-closure error**, straight off the screen.
+4. **Are there red links between stripes?** Those are the corrections that keep the map straight.
+   None at all on a large arena usually means the camera is looking at texture-free ground.
+
+### 3.9 Tuning checklist
 
 | Symptom | Look at |
 |---|---|

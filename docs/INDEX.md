@@ -58,6 +58,10 @@ Look up a topic, a file, a parameter or an error message and go straight to the 
 | **RTAB-Map — setup** | [VIO & Localization](10_VIO_LOCALIZATION.md) |
 | **RTAB-Map — parameters** | [VIO & Localization](10_VIO_LOCALIZATION.md) · file `drone/viman_mission/viman_mission/rtabmap_config.py` |
 | **RTAB-Map — inspecting the map** | [VIO & Localization](10_VIO_LOCALIZATION.md) |
+| **RTAB-Map — 3D map screenshots** | [VIO — reading the 3D map](10_VIO_LOCALIZATION.md#38-reading-the-3d-map-real-flight-screenshots) · [main README — the flight](../README.md) |
+| **Trajectory line colours (magenta / yellow / cyan)** | [VIO — reading the 3D map](10_VIO_LOCALIZATION.md#38-reading-the-3d-map-real-flight-screenshots) |
+| **Flight path — where to see it** | [main README — the flight](../README.md) · [VIO — reading the 3D map](10_VIO_LOCALIZATION.md#38-reading-the-3d-map-real-flight-screenshots) |
+| **Drift — how to measure it** | [VIO — reading the 3D map](10_VIO_LOCALIZATION.md#38-reading-the-3d-map-real-flight-screenshots) |
 | **Seeding (VIO frame alignment)** | [VIO & Localization](10_VIO_LOCALIZATION.md) |
 | **Stitching** | [Stage Guide — Stage 1](07_STAGE_GUIDE.md) · [How It Works](../HOW_IT_WORKS.md) |
 | **Survey grid parameters** | [Drone Software](09_DRONE_SOFTWARE.md) · `mission_params.yaml` → `survey_mission:` |
