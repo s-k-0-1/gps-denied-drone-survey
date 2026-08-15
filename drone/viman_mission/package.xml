@@ -4,12 +4,12 @@
   <name>viman_mission</name>
   <version>1.0.0</version>
   <description>
-    Autonomous RTAB-Map VIO mission stack — Viman Rakshak / IRoC-U 2026.
+    Autonomous RTAB-Map VIO mission stack for GPS-denied flight.
     Nodes: auto_mission (OFFBOARD state machine), vision_bridge
     (RTAB-Map odom → MAVROS vision pose), rtabmap_trigger (standalone
     altitude-triggered RTAB-Map launcher).
   </description>
-  <maintainer email="shiviansh0@gmail.com">Shiviansh</maintainer>
+  <maintainer email="maintainer@example.com">Maintainer</maintainer>
   <license>MIT</license>
 
   <depend>rclpy</depend>

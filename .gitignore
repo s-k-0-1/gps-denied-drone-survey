@@ -52,6 +52,10 @@ Thumbs.db
 
 # ── Local config / secrets ────────────────────────────────────────────────
 .env
+.env.local
+# auto-generated dashboard password + machine token (never commit)
+# NOTE: a pattern must be alone on its line — git does NOT strip trailing comments.
+.base_station_secrets
 voltage.txt
 cloudflared
 

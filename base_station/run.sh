@@ -9,6 +9,8 @@ cd "$(dirname "$0")/.."          # → ~/advanced_matcher (pipeline root)
 # export MAVLINK_CONN="udpin:0.0.0.0:14550"
 # export BASE_STATION_PORT=8000
 # export RUN_PIPELINE_ON_MISSION=0        # display-only by default
+# export BASE_STATION_HOST=0.0.0.0        # expose to the LAN (default is loopback only)
+# export IROC_USER=me IROC_PASS='...'     # otherwise generated on first run
 
 PORT="${BASE_STATION_PORT:-8000}"
 echo "──────────────────────────────────────────────────────────"

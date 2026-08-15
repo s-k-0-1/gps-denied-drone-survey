@@ -17,9 +17,9 @@ setup(
     ],
     install_requires=["setuptools"],
     zip_safe=True,
-    maintainer="Shiviansh",
-    maintainer_email="shiviansh0@gmail.com",
-    description="Autonomous RTAB-Map VIO mission stack (Viman Rakshak / IRoC-U 2026)",
+    maintainer="Maintainer",
+    maintainer_email="maintainer@example.com",
+    description="Autonomous RTAB-Map VIO mission stack for GPS-denied flight",
     license="MIT",
     entry_points={
         "console_scripts": [

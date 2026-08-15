@@ -72,6 +72,6 @@ NEXT STEPS (to make it live)
      sudo systemctl restart mavlink-router
 
 4. VERIFY (from the Jetson):
-     curl -i -X POST "http://$NEW:8000/api/landed?token=<YOUR_TOKEN>"   # expect 200
+     curl -i -X POST -H "X-Auth-Token: <YOUR_TOKEN>" "http://$NEW:8000/api/landed"   # expect 200
 ──────────────────────────────────────────────────────────────
 EOF

@@ -200,7 +200,7 @@ Battery voltage during charging does **not** travel over MAVLink. The ESP32 send
 straight to the dashboard over WiFi:
 
 ```
-ESP32 ──HTTP POST /api/dock_log?token=lumadock──► dashboard "Docking & Charging" panel
+ESP32 ──HTTP POST /api/dock_log  (X-Auth-Token header)──► dashboard "Docking & Charging" panel
 ESP32 ──HTTP POST /api/dock_register?…&ip=…────► dashboard learns the ESP32's IP
 ```
 

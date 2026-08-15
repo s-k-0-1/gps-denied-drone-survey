@@ -70,9 +70,11 @@ NetTee NetSerial;
 void registerWithBase() {
   if (WiFi.status() != WL_CONNECTED) return;
   HTTPClient http;
-  String url = String(BASE_URL) + "/api/dock_register?token=" + DOCK_TOKEN +
-               "&ip=" + WiFi.localIP().toString();
+  // Token goes in a header, not the query string — query strings are recorded
+  // in proxy and web-server access logs in plain text.
+  String url = String(BASE_URL) + "/api/dock_register?ip=" + WiFi.localIP().toString();
   http.begin(url);
+  http.addHeader("X-Auth-Token", DOCK_TOKEN);
   http.setConnectTimeout(1500);
   http.POST("");
   http.end();
@@ -94,7 +96,8 @@ void logTask(void* arg) {
       }
       if (WiFi.status() == WL_CONNECTED) {
         HTTPClient http;
-        http.begin(String(BASE_URL) + "/api/dock_log?token=" + DOCK_TOKEN);
+        http.begin(String(BASE_URL) + "/api/dock_log");
+        http.addHeader("X-Auth-Token", DOCK_TOKEN);
         http.addHeader("Content-Type", "text/plain");
         http.setConnectTimeout(1500);
         http.POST(batch);

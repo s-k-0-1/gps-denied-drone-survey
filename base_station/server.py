@@ -234,12 +234,21 @@ def _check_auth(request) -> bool:
 _MACHINE_PATHS = ("/api/landed", "/api/dock_log", "/api/dock_register", "/api/transfer_done")
 
 
+def _check_machine_token(request) -> bool:
+    """Token from the X-Auth-Token header (preferred — query strings end up in
+    proxy and access logs). ?token= is still accepted so older ESP32 firmware
+    keeps working, but it is deprecated."""
+    import secrets
+    tok = request.headers.get("X-Auth-Token") or request.query_params.get("token") or ""
+    return secrets.compare_digest(tok, config.MACHINE_TOKEN)
+
+
 @app.middleware("http")
 async def gate(request, call_next):
     """Password gate (HTTP Basic for humans, token for machines) + no-cache."""
     path = request.url.path
     if path in _MACHINE_PATHS:
-        if request.query_params.get("token") != config.MACHINE_TOKEN:
+        if not _check_machine_token(request):
             return Response(status_code=401)
     elif config.AUTH_ENABLED and not _check_auth(request):
         return Response(
@@ -742,8 +751,36 @@ async def ws_endpoint(ws: WebSocket):
 
 
 # ──────────────────────────────────────────────────────────────────────────
+def _print_credentials():
+    """Show the local credentials at startup so the dashboard is usable.
+
+    Secrets the operator passed in via IROC_PASS / IROC_TOKEN are NOT echoed —
+    they already know them, and printing them would only widen the exposure.
+    Auto-generated ones are shown every run (they live in SECRETS_FILE, which
+    this user can read anyway) — printing only once is useless if the file was
+    created by an earlier process, e.g. an import during a smoke test."""
+    show_pass  = config.AUTH_ENABLED and "IROC_PASS"  not in config._FROM_ENV
+    show_token = "IROC_TOKEN" not in config._FROM_ENV
+    if not (show_pass or show_token):
+        return
+    line = "─" * 66
+    print(f"\n{line}\n  LOCAL CREDENTIALS  (stored in {config.SECRETS_FILE})")
+    if show_pass:
+        print(f"    dashboard login : {config.AUTH_USER} / {config.AUTH_PASS}")
+    if show_token:
+        print(f"    machine token   : {config.MACHINE_TOKEN}")
+        print( "                      → set as DOCK_TOKEN on the ESP32 and Jetson")
+    print(f"  Delete {config.SECRETS_FILE.name} to rotate. Never commit it.\n{line}\n")
+
+
 def main():
     import uvicorn
+    _print_credentials()
+    if config.HOST not in ("127.0.0.1", "localhost"):
+        print(f"  ⚠  Listening on {config.HOST} — the dashboard can arm and fly "
+              f"the drone.\n     Make sure the password is strong.\n")
+    if not config.AUTH_ENABLED:
+        print("  ⚠  IROC_AUTH=0 — dashboard is UNAUTHENTICATED. Trusted LAN only.\n")
     print(f"Base Station → http://localhost:{config.PORT}   "
           f"(base_dir={config.BASE_DIR})")
     uvicorn.run(app, host=config.HOST, port=config.PORT, log_level="info")

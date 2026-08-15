@@ -28,8 +28,12 @@ python3 -m base_station.server
 #    …or just:  bash base_station/run.sh
 ```
 
-Open **http://localhost:8000** (from Windows: same URL usually works with WSL2;
-if not, use the WSL IP from `hostname -I`, e.g. `http://172.x.x.x:8000`).
+Open **http://localhost:8000**. From Windows this works as-is — WSL2 forwards
+`localhost` into the VM's loopback. If you need to reach it by the WSL IP
+(`hostname -I`) or from another machine, start it with
+`BASE_STATION_HOST=0.0.0.0`, which is off by default on purpose.
+
+The first run prints a generated login — write it down.
 
 Click **START MISSION** → the simulator flies an autonomous sortie by replaying
 your newest `survey/<run>/coordinates.csv`: Takeoff → Survey (capturing each
@@ -62,17 +66,21 @@ FC). Return/Land sends `RTL`. Camera capture sends `IMAGE_START_CAPTURE`.
 
 ## View from anywhere (public URL + password)
 
-The dashboard is protected by a password (HTTP Basic). Default login:
+The dashboard is protected by a password (HTTP Basic). **There is no default
+password** — on the first run one is generated, printed once, and saved to
+`../.base_station_secrets` (chmod 600, gitignored). The username is `operator`.
 
-| user | password |
-|---|---|
-| `luma` | `ascend2026` |
-
-Change it with env vars before starting the server (recommended):
+Set your own instead (recommended):
 
 ```bash
-IROC_USER=luma IROC_PASS='your-strong-password' python3 -m base_station.server
+IROC_USER=yourname IROC_PASS='your-strong-password' python3 -m base_station.server
 ```
+
+Delete `.base_station_secrets` to rotate both the password and the machine token.
+
+> The server binds **`127.0.0.1`** by default — it can arm and fly the drone, so
+> it is not on your LAN unless you set `BASE_STATION_HOST=0.0.0.0`. The tunnel
+> below works fine with loopback binding.
 
 To open it from **any network, anywhere**, run a Cloudflare quick tunnel in a
 second WSL terminal (no account needed):

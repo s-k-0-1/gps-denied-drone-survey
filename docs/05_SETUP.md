@@ -178,8 +178,9 @@ python3 iroc_pipeline_fixed.py
 python3 -m base_station.server
 ```
 
-Open **<http://localhost:8000>** — login `luma` / `ascend2026` (change with `IROC_USER` /
-`IROC_PASS`).
+The first run prints a **generated** password and machine token, and saves them to
+`.base_station_secrets`. Open **<http://localhost:8000>** and log in as `operator` with that
+password (or set your own with `IROC_USER` / `IROC_PASS`).
 
 With a real drone connected through mavlink-router on the Jetson:
 
@@ -196,9 +197,10 @@ Without hardware it starts in simulator mode automatically, so the UI always wor
 | `BASE_STATION_PORT` | `8000` | HTTP port |
 | `DRONE_LINK_MODE` | `simulator` | `mavlink` / `simulator` / `auto` |
 | `MAVLINK_CONN` | `udpin:0.0.0.0:14550` | MAVLink endpoint |
-| `IROC_USER` / `IROC_PASS` | `luma` / `ascend2026` | Dashboard login |
+| `BASE_STATION_HOST` | `127.0.0.1` | Loopback by default; `0.0.0.0` exposes it to the LAN |
+| `IROC_USER` / `IROC_PASS` | `operator` / *generated on first run* | Dashboard login |
 | `IROC_AUTH` | `1` | `0` disables the password (trusted LAN only) |
-| `IROC_TOKEN` | `lumadock` | Shared token for ESP32 calls — must match the firmware |
+| `IROC_TOKEN` | *generated on first run* | Shared token for ESP32 calls — must match the firmware |
 
 ---
 

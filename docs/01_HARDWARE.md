@@ -408,7 +408,7 @@ Edit these at the top of `esp32_firmware/full_base_station_wifi.ino`:
 |---|---|---|
 | `WIFI_SSID` / `WIFI_PASS` | `LUMA` / … | Network the ESP32 joins |
 | `BASE_URL` | `http://<PC-IP>:8000` | Dashboard address (get PC IP with `hostname -I`) |
-| `DOCK_TOKEN` | `lumadock` | Must match `IROC_TOKEN` on the dashboard |
+| `DOCK_TOKEN` | `CHANGE_ME` | Must match `IROC_TOKEN` on the dashboard (printed on its first run) |
 | `DIVIDER_RATIO` | `5.7` | Your resistor divider ratio — **update to match your resistors** |
 | `CAL_SLOPE` / `CAL_OFFSET` | `1.0` / `0.0` | Fine voltage calibration |
 | `HIGH_THRESHOLD` / `LOW_THRESHOLD` | `3.0 V` / `0.5 V` | Contact / polarity decision levels |

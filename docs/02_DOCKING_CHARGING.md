@@ -182,8 +182,8 @@ steppers buzz or stall.
 
 | What | Endpoint called on the dashboard | When |
 |---|---|---|
-| Register its own IP | `POST /api/dock_register?token=…&ip=…` | On connect, then every 30 s |
-| Mirror serial log | `POST /api/dock_log?token=…` (text body) | Whenever it prints |
+| Register its own IP | `POST /api/dock_register?ip=…` + `X-Auth-Token` header | On connect, then every 30 s |
+| Mirror serial log | `POST /api/dock_log` + `X-Auth-Token` header (text body) | Whenever it prints |
 
 A background FreeRTOS task on **core 0** does the HTTP work, so blocking network calls can never
 disturb motor timing in `loop()` (core 1). Log lines are queued and sent in batches.
@@ -200,8 +200,9 @@ fragile static IP needed.
 | **STOP** button | `GET /dockstop` | Stop motors, disable charging, reset |
 | (status polling) | `GET /status` | Docking active, contact, pad voltages, charge state |
 
-All machine-to-machine calls carry the shared token (`DOCK_TOKEN` on the ESP32 must equal
-`IROC_TOKEN` on the dashboard, default `lumadock`) so they bypass the dashboard's password.
+All machine-to-machine calls carry the shared token in an **`X-Auth-Token` header** (never in the
+query string — those land in access logs). `DOCK_TOKEN` on the ESP32 must equal `IROC_TOKEN` on the
+dashboard, which prints a generated token on its first run.
 
 ### 7.3 What you see on the dashboard
 

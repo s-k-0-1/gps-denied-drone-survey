@@ -1,4 +1,4 @@
-# ASCEND — ground-station pipeline requirements (Python 3.10+)
+# Ground-station pipeline requirements (Python 3.10+)
 # Install:  pip install -r requirements.txt --break-system-packages
 #
 # The dashboard has its own (much lighter) requirements: base_station/requirements.txt

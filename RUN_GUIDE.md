@@ -104,7 +104,8 @@ pip install -r base_station/requirements.txt --break-system-packages   # once
 python3 -m base_station.server
 ```
 
-Open **<http://localhost:8000>** (login `luma` / `ascend2026`) → pick a job in the pipeline
+Open **<http://localhost:8000>** (log in as `operator` with the password printed on first run) →
+pick a job in the pipeline
 dropdown → **Run**. The log streams into the browser and the panels refresh automatically.
 
 ---

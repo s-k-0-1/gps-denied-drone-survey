@@ -318,7 +318,9 @@ pip install -r base_station/requirements.txt --break-system-packages
 python3 -m base_station.server
 ```
 
-Open **<http://localhost:8000>** — login `luma` / `ascend2026` (change it, see below).
+On the first run it prints a **generated** dashboard password and machine token — copy them down
+(they are also saved to `.base_station_secrets`). Then open **<http://localhost:8000>** and log in
+with `operator` + that password.
 
 Connected to the real drone:
 
@@ -333,8 +335,9 @@ Without hardware it starts in simulator mode, so the UI always works.
 | `BASE_STATION_PORT` | `8000` | HTTP port |
 | `DRONE_LINK_MODE` | `simulator` | `mavlink` / `simulator` / `auto` |
 | `MAVLINK_CONN` | `udpin:0.0.0.0:14550` | MAVLink endpoint (use `tcp:<jetson-ip>:5760`) |
-| `IROC_USER` / `IROC_PASS` | `luma` / `ascend2026` | **Change these** |
-| `IROC_TOKEN` | `lumadock` | Shared machine token — **must match** the Jetson and ESP32 |
+| `BASE_STATION_HOST` | `127.0.0.1` | Loopback by default. `0.0.0.0` exposes it to the LAN |
+| `IROC_USER` / `IROC_PASS` | `operator` / *generated* | Set your own, or use the printed one |
+| `IROC_TOKEN` | *generated* | Shared machine token — **must match** the Jetson and ESP32 |
 
 ✅ `python3 -c "import fastapi, uvicorn, pymavlink; print('dashboard OK')"`
 

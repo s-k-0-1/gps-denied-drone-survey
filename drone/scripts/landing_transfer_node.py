@@ -61,9 +61,11 @@ class LandingTransfer(Node):
     def notify_base_station(self):
         """Fire-and-forget POST so it never blocks/holds up the rsync."""
         def _post():
-            url = f"{BASE_URL}/api/landed?token={DOCK_TOKEN}"
+            url = f"{BASE_URL}/api/landed"
             try:
-                req = urllib.request.Request(url, data=b"", method="POST")
+                req = urllib.request.Request(
+                    url, data=b"", method="POST",
+                    headers={"X-Auth-Token": DOCK_TOKEN})
                 with urllib.request.urlopen(req, timeout=4) as r:
                     r.read()
                 self.get_logger().info("Base station notified (docking armed).")
@@ -74,9 +76,11 @@ class LandingTransfer(Node):
     def notify_transfer_done(self):
         """Tell the base station the photos are in → it auto-runs the pipeline."""
         def _post():
-            url = f"{BASE_URL}/api/transfer_done?token={DOCK_TOKEN}"
+            url = f"{BASE_URL}/api/transfer_done"
             try:
-                req = urllib.request.Request(url, data=b"", method="POST")
+                req = urllib.request.Request(
+                    url, data=b"", method="POST",
+                    headers={"X-Auth-Token": DOCK_TOKEN})
                 with urllib.request.urlopen(req, timeout=6) as r:
                     r.read()
                 self.get_logger().info("Base station notified — pipeline auto-started.")

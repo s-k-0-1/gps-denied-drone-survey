@@ -97,10 +97,14 @@ rsync -avz --partial -e "ssh -p <port>" <latest_survey_folder>/ user@pc:<drone_p
 
 | Endpoint | Called by | Effect |
 |---|---|---|
-| `POST /api/landed?token=…` | Jetson, on touchdown | Waits `DOCK_DELAY_S` (5 s), then calls the ESP32's `/landed` to start docking |
-| `POST /api/transfer_done?token=…` | Jetson, after a successful rsync | Starts the vision pipeline automatically |
-| `POST /api/dock_register?token=…&ip=…` | ESP32, on boot + every 30 s | Tells the dashboard the ESP32's current IP |
-| `POST /api/dock_log?token=…` | ESP32, continuously | Streams the docking/charging log into the dashboard |
+All four carry the shared token in an **`X-Auth-Token` header**.
+
+| Endpoint | Called by | Effect |
+|---|---|---|
+| `POST /api/landed` | Jetson, on touchdown | Waits `DOCK_DELAY_S` (5 s), then calls the ESP32's `/landed` to start docking |
+| `POST /api/transfer_done` | Jetson, after a successful rsync | Starts the vision pipeline automatically |
+| `POST /api/dock_register?ip=…` | ESP32, on boot + every 30 s | Tells the dashboard the ESP32's current IP |
+| `POST /api/dock_log` | ESP32, continuously | Streams the docking/charging log into the dashboard |
 
 All four bypass the browser password but require the shared token, so the machines can talk to
 each other without a login while the UI stays protected.
@@ -165,10 +169,10 @@ Everything automated has a manual equivalent:
 
 ```bash
 # on the PC — should trigger the docking sequence
-curl -i -X POST "http://<pc-ip>:8000/api/landed?token=<TOKEN>"
+curl -i -X POST -H "X-Auth-Token: <TOKEN>" "http://<pc-ip>:8000/api/landed"
 
 # should start the pipeline
-curl -i -X POST "http://<pc-ip>:8000/api/transfer_done?token=<TOKEN>"
+curl -i -X POST -H "X-Auth-Token: <TOKEN>" "http://<pc-ip>:8000/api/transfer_done"
 ```
 
 Both should return 200 and be visible in the dashboard log.

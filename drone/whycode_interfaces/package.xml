@@ -8,7 +8,7 @@
     (jiriUlr/whycode-ros2). Reconstructed exactly from the node's source
     field usage so the whycode node builds and runs against it.
   </description>
-  <maintainer email="24uec227@lnmiit.ac.in">Viman Rakshak</maintainer>
+  <maintainer email="maintainer@example.com">Maintainer</maintainer>
   <license>See whycode LICENSE (non-commercial research/education)</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>

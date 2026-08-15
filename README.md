@@ -340,21 +340,46 @@ gps-denied-drone-survey/
 
 # 9 · Security note
 
-The repository ships with **placeholders and defaults, not real credentials**. Set your own before
-deploying:
+**There are no default passwords or tokens in this repository.** A default credential in a public
+repo is the same as no password at all.
 
-| What | Where | Default |
-|---|---|---|
-| WiFi SSID / password | `esp32_firmware/full_base_station_wifi.ino` | `YOUR_WIFI_SSID` / `YOUR_WIFI_PASSWORD` |
-| Ground-PC address | same file, `BASE_URL` | `http://192.168.1.100:8000` |
-| Machine token | ESP `DOCK_TOKEN` = Jetson `DOCK_TOKEN` = dashboard `IROC_TOKEN` | `CHANGE_ME` |
-| Transfer target | Jetson service env: `PC_USER`, `PC_IP`, `PC_DEST_PATH` | placeholders |
-| Dashboard login | env `IROC_USER` / `IROC_PASS` | `luma` / `ascend2026` |
+On the **first run** the dashboard generates a random password and machine token and stores them in
+`.base_station_secrets` (chmod 600, gitignored). They are printed at every startup until you set
+your own:
+
+```
+──────────────────────────────────────────────────────────────────
+  LOCAL CREDENTIALS  (stored in /home/you/advanced_matcher/.base_station_secrets)
+    dashboard login : operator / 8Kq2-vRt9wLm
+    machine token   : nX4pQ7hT2yBc
+                      → set as DOCK_TOKEN on the ESP32 and Jetson
+  Delete .base_station_secrets to rotate. Never commit it.
+──────────────────────────────────────────────────────────────────
+```
+
+Secrets you supply through `IROC_PASS` / `IROC_TOKEN` are never echoed to the terminal.
+
+Prefer to choose them yourself:
 
 ```bash
 IROC_USER=yourname IROC_PASS='a-strong-password' IROC_TOKEN='your-token' \
     python3 -m base_station.server
 ```
+
+| What | Where | Ships as |
+|---|---|---|
+| Dashboard login | env `IROC_USER` / `IROC_PASS` | **generated on first run** |
+| Machine token | dashboard `IROC_TOKEN` = Jetson `DOCK_TOKEN` = ESP `DOCK_TOKEN` | **generated on first run** |
+| WiFi SSID / password | `esp32_firmware/full_base_station_wifi.ino` | `YOUR_WIFI_SSID` / `YOUR_WIFI_PASSWORD` |
+| Ground-PC address | same file, `BASE_URL` | `http://192.168.1.100:8000` |
+| Transfer target | Jetson service env: `PC_USER`, `PC_IP`, `PC_DEST_PATH` | placeholders |
+
+Two more defaults chosen for safety:
+
+- The server binds **`127.0.0.1`**, not `0.0.0.0`. The dashboard can arm and fly the drone, so it
+  is not on your LAN unless you set `BASE_STATION_HOST=0.0.0.0` deliberately.
+- The machine token travels in an **`X-Auth-Token` header**, never in the query string — query
+  strings are written to proxy and web-server access logs in plain text.
 
 Never commit real WiFi passwords, tokens or private IP addresses.
 

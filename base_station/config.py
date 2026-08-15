@@ -66,23 +66,86 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".bmp",
 # ──────────────────────────────────────────────────────────────────────────
 # Server
 # ──────────────────────────────────────────────────────────────────────────
-HOST = os.environ.get("BASE_STATION_HOST", "0.0.0.0")
+# Bind to loopback by default — the dashboard can arm and fly the drone, so it
+# must not be reachable from the whole LAN unless you explicitly ask for it.
+#   BASE_STATION_HOST=0.0.0.0   → expose on the network (do this consciously)
+HOST = os.environ.get("BASE_STATION_HOST", "127.0.0.1")
 PORT = int(os.environ.get("BASE_STATION_PORT", "8000"))
 PYTHON = os.environ.get("IROC_PYTHON", "python3")   # interpreter used for pipeline subprocess
 
+# ──────────────────────────────────────────────────────────────────────────
+# Secrets — NEVER hard-coded, never committed
+# ──────────────────────────────────────────────────────────────────────────
+# There are deliberately no default passwords or tokens in this file. A default
+# that ships in a public repository is the same as no password at all.
+#
+# Resolution order for each secret:
+#   1. environment variable  (IROC_PASS / IROC_TOKEN)  — preferred
+#   2. SECRETS_FILE          (generated on first run, chmod 600, gitignored)
+#   3. freshly generated random value, written to SECRETS_FILE and printed once
+#
+# So the first run "just works" and still has a strong, unique secret.
+SECRETS_FILE = BASE_DIR / ".base_station_secrets"
+
+_FROM_ENV: set[str] = set()     # secrets the operator supplied — never echoed back
+
+
+def _read_secrets_file() -> dict[str, str]:
+    out: dict[str, str] = {}
+    try:
+        for line in SECRETS_FILE.read_text().splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, _, v = line.partition("=")
+                out[k.strip()] = v.strip()
+    except OSError:
+        pass
+    return out
+
+
+def _write_secrets_file(values: dict[str, str]) -> None:
+    body = ["# Auto-generated local secrets for the base-station dashboard.",
+            "# NOT tracked by git. Delete this file to rotate the credentials.",
+            ""]
+    body += [f"{k}={v}" for k, v in sorted(values.items())]
+    try:
+        SECRETS_FILE.write_text("\n".join(body) + "\n")
+        os.chmod(SECRETS_FILE, 0o600)          # owner-only
+    except OSError:
+        pass                                   # read-only checkout: keep running in memory
+
+
+def _secret(env_key: str, length: int = 12) -> str:
+    """Environment → secrets file → newly generated. Never a shipped constant."""
+    val = os.environ.get(env_key)
+    if val:
+        _FROM_ENV.add(env_key)
+        return val
+    stored = _read_secrets_file()
+    if env_key in stored and stored[env_key]:
+        return stored[env_key]
+    import secrets as _secrets
+    val = _secrets.token_urlsafe(length)
+    stored[env_key] = val
+    _write_secrets_file(stored)
+    return val
+
+
 # Password gate (HTTP Basic) — protects the dashboard when exposed over a tunnel.
-# Change these with env vars: IROC_USER, IROC_PASS.  Disable with IROC_AUTH=0.
-AUTH_USER = os.environ.get("IROC_USER", "luma")
-AUTH_PASS = os.environ.get("IROC_PASS", "ascend2026")
+AUTH_USER = os.environ.get("IROC_USER", "operator")
 AUTH_ENABLED = os.environ.get("IROC_AUTH", "1") not in ("0", "false", "False", "no")
+AUTH_PASS = _secret("IROC_PASS") if AUTH_ENABLED else ""
 
 # ──────────────────────────────────────────────────────────────────────────
 # Docking / ESP32 integration
 # ──────────────────────────────────────────────────────────────────────────
 # Shared token used by machine-to-machine calls (Jetson → /api/landed,
 # ESP32 → /api/dock_log & /api/dock_register). These bypass the dashboard
-# password but must present this token. Keep it matching DOCK_TOKEN in the ESP.
-MACHINE_TOKEN = os.environ.get("IROC_TOKEN", "lumadock")
+# password but must present this token in the X-Auth-Token header.
+#
+# Generated on first run and stored in SECRETS_FILE — copy the printed value
+# into DOCK_TOKEN on the ESP32 and the Jetson, or set IROC_TOKEN yourself.
+MACHINE_TOKEN = _secret("IROC_TOKEN")
 
 # Seconds to wait AFTER the drone lands before commanding the ESP to dock.
 DOCK_DELAY_S = float(os.environ.get("IROC_DOCK_DELAY", "5"))

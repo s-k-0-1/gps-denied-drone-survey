@@ -33,4 +33,4 @@ rsync -avz --partial -e "ssh -p $PC_PORT" "$LATEST/" "$PC_USER@$PC_IP:$PC_DEST"
 
 echo
 echo "✅ Transfer complete: $(basename "$LATEST")"
-echo "   (optional) also start docking:  curl -X POST \"http://$PC_IP:8000/api/landed?token=lumadock\""
+echo "   (optional) also start docking:  curl -X POST -H \"X-Auth-Token: \$DOCK_TOKEN\" \"http://$PC_IP:8000/api/landed\""

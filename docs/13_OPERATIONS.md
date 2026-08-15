@@ -353,8 +353,8 @@ With MAVROS running and the bringup stack up (§2.5), seed and validate as befor
 
 ```bash
 # from the Jetson
-curl -i -X POST "http://<pc-ip>:8000/api/landed?token=<TOKEN>"
-curl -i -X POST "http://<pc-ip>:8000/api/transfer_done?token=<TOKEN>"
+curl -i -X POST -H "X-Auth-Token: <TOKEN>" "http://<pc-ip>:8000/api/landed"
+curl -i -X POST -H "X-Auth-Token: <TOKEN>" "http://<pc-ip>:8000/api/transfer_done"
 ```
 
 > **✅ TEST** — both return **200**; the dashboard log shows them, docking starts on the first and
@@ -591,7 +591,7 @@ DRONE_LINK_MODE=mavlink MAVLINK_CONN="tcp:<jetson-ip>:5760" python3 -m base_stat
 > ```bash
 > ping -c2 <jetson-ip>
 > nc -vz <jetson-ip> 5760              # "succeeded"
-> curl -i -X POST "http://<pc-ip>:8000/api/landed?token=<TOKEN>"   # 200
+> curl -i -X POST -H "X-Auth-Token: <TOKEN>" "http://<pc-ip>:8000/api/landed"   # 200
 > ```
 
 ---
